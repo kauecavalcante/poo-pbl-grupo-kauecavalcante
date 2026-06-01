@@ -65,4 +65,29 @@ class ServidorOficinaTest {
         HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
         assertEquals(404, resp.statusCode());
     }
+
+    @Test
+    @DisplayName("GET / serve index.html com Content-Type text/html e status 200")
+    void raizServeIndexHtml() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+            .uri(URI.create(base + "/"))
+            .GET()
+            .build();
+        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, resp.statusCode());
+        assertTrue(resp.headers().firstValue("Content-Type").orElse("").contains("text/html"));
+        assertTrue(resp.body().contains("Oficina Mecanica"));
+    }
+
+    @Test
+    @DisplayName("GET /static/style.css serve o CSS com 200")
+    void cssServido() throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+            .uri(URI.create(base + "/static/style.css"))
+            .GET()
+            .build();
+        HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, resp.statusCode());
+        assertTrue(resp.headers().firstValue("Content-Type").orElse("").contains("css"));
+    }
 }

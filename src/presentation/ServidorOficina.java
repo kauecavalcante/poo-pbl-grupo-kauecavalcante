@@ -22,6 +22,7 @@ import infrastructure.sqlite.PecaSqliteRepository;
 import infrastructure.sqlite.VeiculoSqliteRepository;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
+import io.javalin.http.staticfiles.Location;
 import presentation.controller.ClienteController;
 import presentation.controller.OrdemDeServicoController;
 import presentation.controller.PecaController;
@@ -68,9 +69,13 @@ public final class ServidorOficina {
             aprovar, rejeitar, concluir, entregar, cancelar, osRepo
         );
 
-        this.app = Javalin.create(config ->
-            config.jsonMapper(new JavalinJackson(mapper, false))
-        );
+        this.app = Javalin.create(config -> {
+            config.jsonMapper(new JavalinJackson(mapper, false));
+            config.staticFiles.add(sf -> {
+                sf.directory = "/web";
+                sf.location = Location.CLASSPATH;
+            });
+        });
 
         ManipuladorDeExcecoes.registrar(app);
 

@@ -1,0 +1,284 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #f5f5f5;
+}
+
+a {
+    color: #1a56db;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+header {
+    background: #1a56db;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+header nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+header nav a {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+header nav a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    text-decoration: none;
+    color: #fff;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin: 0 0 0.25rem;
+    color: #111;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.card p.subtitulo {
+    margin: 0 0 1rem;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.grade-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.grade-nav a {
+    display: block;
+    background: #fff;
+    border: 1px solid #d0d8e8;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    color: #1a56db;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.grade-nav a:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    border-color: #1a56db;
+    text-decoration: none;
+}
+
+.grade-nav a span {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #666;
+    margin-top: 0.2rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+}
+
+input[type="text"],
+input[type="number"] {
+    padding: 0.45rem 0.65rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    width: 100%;
+    transition: border-color 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: #1a56db;
+    box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
+}
+
+.acoes {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+
+button {
+    padding: 0.5rem 1.1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+    opacity: 0.88;
+}
+
+button.primario {
+    background: #1a56db;
+    color: #fff;
+}
+
+button.secundario {
+    background: #e5e7eb;
+    color: #333;
+}
+
+button.perigo {
+    background: #c0392b;
+    color: #fff;
+}
+
+.resultado {
+    margin-top: 0.75rem;
+    min-height: 1.5rem;
+}
+
+.sucesso {
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+    border-radius: 6px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.erro {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    border-radius: 6px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.info {
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1e40af;
+    border-radius: 6px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.dado {
+    display: flex;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.dado strong {
+    color: #555;
+    font-weight: 500;
+}
+
+.dado code {
+    font-family: monospace;
+    background: #f0f0f0;
+    padding: 0 0.3rem;
+    border-radius: 3px;
+    word-break: break-all;
+}
+
+.separador {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 1rem 0;
+}
+
+.grupo-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.grupo-item .remover {
+    align-self: flex-end;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+}
+
+@media (max-width: 500px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .acoes {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+}
