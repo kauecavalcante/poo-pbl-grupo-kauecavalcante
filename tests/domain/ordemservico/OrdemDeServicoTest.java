@@ -351,4 +351,96 @@ class OrdemDeServicoTest {
             return os;
         }
     }
+
+    @Nested
+    @DisplayName("Cancelamento")
+    class Cancelamento {
+
+        @Test
+        @DisplayName("cancelar em RECEBIDA transita para CANCELADA e expõe motivo")
+        void cancelarEmRecebida() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.cancelar(MOTIVO);
+            assertEquals(StatusOS.CANCELADA, os.status());
+            assertEquals(Optional.of(MOTIVO), os.motivoCancelamento());
+        }
+
+        @Test
+        @DisplayName("cancelar em AGUARDANDO_APROVACAO transita para CANCELADA")
+        void cancelarEmAguardando() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            os.cancelar(MOTIVO);
+            assertEquals(StatusOS.CANCELADA, os.status());
+        }
+
+        @Test
+        @DisplayName("cancelar em EM_EXECUCAO transita para CANCELADA")
+        void cancelarEmExecucao() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            os.aprovar();
+            os.cancelar(MOTIVO);
+            assertEquals(StatusOS.CANCELADA, os.status());
+        }
+
+        @Test
+        @DisplayName("cancelar em CONCLUIDA é permitido")
+        void cancelarEmConcluida() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            os.aprovar();
+            os.concluir();
+            os.cancelar(MOTIVO);
+            assertEquals(StatusOS.CANCELADA, os.status());
+        }
+
+        @Test
+        @DisplayName("cancelar em ENTREGUE é bloqueado (terminal)")
+        void cancelarEmEntregueBloqueado() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            os.aprovar();
+            os.concluir();
+            os.entregar();
+            assertThrows(IllegalStateException.class, () -> os.cancelar(MOTIVO));
+        }
+
+        @Test
+        @DisplayName("cancelar em REJEITADA é bloqueado (terminal)")
+        void cancelarEmRejeitadaBloqueado() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            os.rejeitar(MOTIVO);
+            assertThrows(IllegalStateException.class, () -> os.cancelar("outro motivo"));
+        }
+
+        @Test
+        @DisplayName("cancelar em CANCELADA é bloqueado (terminal)")
+        void cancelarEmCanceladaBloqueado() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.cancelar(MOTIVO);
+            assertThrows(IllegalStateException.class, () -> os.cancelar("outro motivo"));
+        }
+
+        @Test
+        @DisplayName("cancelar com motivo inválido lança IllegalArgumentException")
+        void cancelarComMotivoInvalido() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertThrows(IllegalArgumentException.class, () -> os.cancelar(null));
+            assertThrows(IllegalArgumentException.class, () -> os.cancelar("AB"));
+        }
+
+        @Test
+        @DisplayName("motivoCancelamento permanece vazio fora de CANCELADA")
+        void motivoCancelamentoVazioForaDeCancelada() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertEquals(Optional.empty(), os.motivoCancelamento());
+        }
+    }
 }

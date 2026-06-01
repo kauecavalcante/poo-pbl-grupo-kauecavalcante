@@ -139,6 +139,10 @@ public final class OrdemDeServico {
         this.dataEntrega = LocalDate.now();
     }
 
+    public void cancelar(String motivo) {
+        this.estado = this.estado.aoCancelar(motivo);
+    }
+
     private static String validarDiagnostico(String diagnostico) {
         if (diagnostico == null || diagnostico.trim().isEmpty()) {
             throw new IllegalArgumentException("diagnóstico não pode ser vazio");
