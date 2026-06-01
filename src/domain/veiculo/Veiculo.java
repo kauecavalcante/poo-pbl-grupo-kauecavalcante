@@ -2,6 +2,7 @@ package domain.veiculo;
 
 import domain.cliente.ClienteId;
 import java.time.Year;
+import java.util.Objects;
 
 public final class Veiculo {
 
@@ -38,6 +39,22 @@ public final class Veiculo {
         );
     }
 
+    public static Veiculo reconstituir(VeiculoId id, Placa placa, String marca, String modelo, int ano, ClienteId dono) {
+        if (id == null) {
+            throw new IllegalArgumentException("id do veículo não pode ser nulo");
+        }
+        exigirPlacaNaoNula(placa);
+        exigirDonoNaoNulo(dono);
+        return new Veiculo(
+            id,
+            placa,
+            validarMarca(marca),
+            validarModelo(modelo),
+            validarAno(ano),
+            dono
+        );
+    }
+
     public VeiculoId id() {
         return id;
     }
@@ -60,6 +77,22 @@ public final class Veiculo {
 
     public ClienteId dono() {
         return dono;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Veiculo outro)) {
+            return false;
+        }
+        return id.equals(outro.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     private static void exigirPlacaNaoNula(Placa placa) {

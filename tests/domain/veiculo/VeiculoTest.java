@@ -1,6 +1,8 @@
 package domain.veiculo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -182,6 +184,92 @@ class VeiculoTest {
                 () -> Veiculo.novo(PLACA, "Fiat", "Uno", anoFutura, DONO)
             );
             assertTrue(ex.getMessage().contains(String.valueOf(anoMaximo)));
+        }
+    }
+
+    @Nested
+    @DisplayName("Reconstituição a partir de identidade existente")
+    class Reconstituicao {
+
+        @Test
+        @DisplayName("reconstituir preserva o ID informado")
+        void reconstituirPreservaId() {
+            VeiculoId id = VeiculoId.novo();
+            Veiculo v = Veiculo.reconstituir(id, PLACA, "Fiat", "Uno", 2010, DONO);
+            assertEquals(id, v.id());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita ID nulo")
+        void reconstituirRejeitaIdNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Veiculo.reconstituir(null, PLACA, "Fiat", "Uno", 2010, DONO)
+            );
+            assertEquals("id do veículo não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de marca")
+        void reconstituirValidaMarca() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Veiculo.reconstituir(VeiculoId.novo(), PLACA, "", "Uno", 2010, DONO)
+            );
+            assertEquals("marca não pode ser vazia", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de ano")
+        void reconstituirValidaAno() {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> Veiculo.reconstituir(VeiculoId.novo(), PLACA, "Fiat", "Uno", 1850, DONO)
+            );
+        }
+    }
+
+    @Nested
+    @DisplayName("Igualdade por identidade")
+    class Igualdade {
+
+        @Test
+        @DisplayName("dois veículos com mesmo ID são iguais mesmo com dados divergentes")
+        void iguaisQuandoMesmoIdAindaQueDadosMudem() {
+            VeiculoId id = VeiculoId.novo();
+            Veiculo antes = Veiculo.reconstituir(id, PLACA, "Fiat", "Uno", 2010, DONO);
+            Veiculo depois = Veiculo.reconstituir(id, PLACA, "Volkswagen", "Gol", 2015, ClienteId.novo());
+            assertEquals(antes, depois);
+            assertEquals(antes.hashCode(), depois.hashCode());
+        }
+
+        @Test
+        @DisplayName("dois veículos com IDs diferentes não são iguais mesmo com dados idênticos")
+        void distintosQuandoIdsDiferentes() {
+            Veiculo a = Veiculo.reconstituir(VeiculoId.novo(), PLACA, "Fiat", "Uno", 2010, DONO);
+            Veiculo b = Veiculo.reconstituir(VeiculoId.novo(), PLACA, "Fiat", "Uno", 2010, DONO);
+            assertNotEquals(a, b);
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertFalse(v.equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertFalse(v.equals(v.id()));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertTrue(v.equals(v));
         }
     }
 }
