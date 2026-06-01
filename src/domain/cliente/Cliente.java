@@ -46,6 +46,14 @@ public final class Cliente {
         return telefone;
     }
 
+    public void alterarNome(String novoNome) {
+        this.nome = validarNome(novoNome);
+    }
+
+    public void alterarTelefone(String novoTelefone) {
+        this.telefone = validarTelefone(novoTelefone);
+    }
+
     // Entidade: igualdade definida exclusivamente pela identidade — duas versões
     // do mesmo cliente (ex: antes e depois de alterar o nome) devem ser tratadas
     // como o mesmo cliente em coleções e comparações de domínio.

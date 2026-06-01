@@ -265,4 +265,113 @@ class ClienteTest {
             assertTrue(c.equals(c));
         }
     }
+
+    @Nested
+    @DisplayName("Mutações controladas")
+    class Mutacoes {
+
+        @Test
+        @DisplayName("alterarNome substitui o nome preservando a identidade")
+        void alterarNomePreservaIdentidade() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            ClienteId idAntes = c.id();
+            c.alterarNome("Maria S. Pereira");
+            assertEquals("Maria S. Pereira", c.nome());
+            assertSame(idAntes, c.id());
+        }
+
+        @Test
+        @DisplayName("alterarNome aplica trim no novo valor")
+        void alterarNomeAplicaTrim() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            c.alterarNome("   João Souza   ");
+            assertEquals("João Souza", c.nome());
+        }
+
+        @Test
+        @DisplayName("alterarNome rejeita valor nulo")
+        void alterarNomeRejeitaNulo() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> c.alterarNome(null)
+            );
+            assertEquals("nome do cliente não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarNome rejeita valor vazio ou só espaços")
+        void alterarNomeRejeitaVazio() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> c.alterarNome("   ")
+            );
+            assertEquals("nome do cliente não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarNome rejeita nome curto demais")
+        void alterarNomeRejeitaCurto() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> c.alterarNome("A")
+            );
+            assertEquals("nome do cliente deve ter ao menos 2 caracteres", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarTelefone substitui o telefone preservando a identidade")
+        void alterarTelefonePreservaIdentidade() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            ClienteId idAntes = c.id();
+            c.alterarTelefone("(11) 99999-8888");
+            assertEquals("(11) 99999-8888", c.telefone());
+            assertSame(idAntes, c.id());
+        }
+
+        @Test
+        @DisplayName("alterarTelefone rejeita valor nulo")
+        void alterarTelefoneRejeitaNulo() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> c.alterarTelefone(null)
+            );
+            assertEquals("telefone não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarTelefone rejeita valor vazio ou só espaços")
+        void alterarTelefoneRejeitaVazio() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> c.alterarTelefone("   ")
+            );
+            assertEquals("telefone não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarTelefone rejeita telefone com menos de 8 dígitos")
+        void alterarTelefoneRejeitaCurto() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> c.alterarTelefone("(11) 123")
+            );
+            assertEquals("telefone deve ter ao menos 8 dígitos", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alteração falha não modifica o estado do cliente")
+        void alteracaoFalhaNaoModificaEstado() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertThrows(IllegalArgumentException.class, () -> c.alterarNome("A"));
+            assertThrows(IllegalArgumentException.class, () -> c.alterarTelefone("123"));
+            assertEquals("Maria Silva", c.nome());
+            assertEquals("11912345678", c.telefone());
+        }
+    }
 }
