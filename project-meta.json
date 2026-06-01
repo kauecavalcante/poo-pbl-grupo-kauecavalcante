@@ -1,0 +1,10 @@
+{
+  "curso": "Ciência da Computação",
+  "disciplina": "Orientação a Objetos",
+  "tema_escolhido": "8",
+  "linguagem": "Java",
+  "gerenciador_dependencias": "Maven",
+  "integrantes": [
+    {"nome": "Kauê Cavalcante", "github_username": "kauecavalcante"}
+  ]
+}
