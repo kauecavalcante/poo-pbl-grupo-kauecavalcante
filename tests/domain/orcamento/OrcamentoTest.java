@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.peca.PecaId;
 import domain.shared.Preco;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -127,6 +128,58 @@ class OrcamentoTest {
                 IllegalArgumentException.class,
                 () -> o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 0)
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("Encapsulamento da lista de itens")
+    class Encapsulamento {
+
+        @Test
+        @DisplayName("itens retorna lista imutável — add lança UnsupportedOperationException")
+        void itensImutavelAdd() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            List<ItemDeOrcamento> snapshot = o.itens();
+            ItemDeOrcamento intruso = ItemDeOrcamento.deMaoDeObra("Intruso", Preco.deReais("1.00"), 1);
+            assertThrows(UnsupportedOperationException.class, () -> snapshot.add(intruso));
+        }
+
+        @Test
+        @DisplayName("itens retorna lista imutável — remove lança UnsupportedOperationException")
+        void itensImutavelRemove() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            List<ItemDeOrcamento> snapshot = o.itens();
+            assertThrows(UnsupportedOperationException.class, () -> snapshot.remove(0));
+        }
+
+        @Test
+        @DisplayName("snapshot obtido antes de adicionar não reflete alterações posteriores no agregado")
+        void snapshotNaoReflectAlteracoesPosteriores() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            List<ItemDeOrcamento> snapshot = o.itens();
+            assertEquals(1, snapshot.size());
+
+            o.adicionarItemDeMaoDeObra("Mão de obra extra", Preco.deReais("80.00"), 1);
+            assertEquals(1, snapshot.size());
+            assertEquals(2, o.itens().size());
+        }
+
+        @Test
+        @DisplayName("itens preserva a ordem de inserção e o conteúdo correto")
+        void itensPreservaOrdemEConteudo() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId primeiro = o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            ItemDeOrcamentoId segundo = o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            ItemDeOrcamentoId terceiro = o.adicionarItemDePeca(PecaId.novo(), "Óleo", Preco.deReais("30.00"), 2);
+
+            List<ItemDeOrcamento> lista = o.itens();
+            assertEquals(3, lista.size());
+            assertEquals(primeiro, lista.get(0).id());
+            assertEquals(segundo, lista.get(1).id());
+            assertEquals(terceiro, lista.get(2).id());
         }
     }
 }

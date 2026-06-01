@@ -31,6 +31,14 @@ public final class Orcamento {
         return itens.isEmpty();
     }
 
+    // Encapsulamento de agregado: a lista interna nunca vaza. List.copyOf
+    // devolve um snapshot imutável — tentativas de mutar o retorno lançam
+    // UnsupportedOperationException, e modificações futuras no agregado
+    // não afetam cópias já devolvidas a chamadores anteriores.
+    public List<ItemDeOrcamento> itens() {
+        return List.copyOf(itens);
+    }
+
     public Preco total() {
         return itens.stream()
             .map(ItemDeOrcamento::subtotal)
