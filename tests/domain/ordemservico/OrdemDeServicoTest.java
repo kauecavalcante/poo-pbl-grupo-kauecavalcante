@@ -1,9 +1,12 @@
 package domain.ordemservico;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.cliente.ClienteId;
 import domain.orcamento.OrcamentoId;
@@ -609,6 +612,97 @@ class OrdemDeServicoTest {
                     new Cancelada(MOTIVO), ABERTURA, null, LocalDate.now())
             );
             assertEquals("OS no estado CANCELADA não pode ter dataEntrega", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Igualdade por identidade")
+    class Igualdade {
+
+        @Test
+        @DisplayName("duas OS com mesmo ID são iguais mesmo com dados divergentes")
+        void iguaisQuandoMesmoIdAindaQueDadosMudem() {
+            OrdemDeServicoId id = OrdemDeServicoId.novo();
+            OrdemDeServico a = OrdemDeServico.reconstituir(
+                id, CLIENTE_ID, VEICULO_ID, null, null,
+                new Recebida(), LocalDate.of(2024, 1, 10), null, null
+            );
+            OrdemDeServico b = OrdemDeServico.reconstituir(
+                id, ClienteId.novo(), VeiculoId.novo(), ORCAMENTO_ID, DIAGNOSTICO,
+                new EmExecucao(), LocalDate.of(2024, 2, 20), null, null
+            );
+            assertEquals(a, b);
+            assertEquals(a.hashCode(), b.hashCode());
+        }
+
+        @Test
+        @DisplayName("OS com IDs diferentes não são iguais")
+        void distintasQuandoIdsDiferentes() {
+            assertNotEquals(
+                OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID),
+                OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID)
+            );
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            assertFalse(OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID).equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertFalse(os.equals(os.id()));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertTrue(os.equals(os));
+        }
+    }
+
+    @Nested
+    @DisplayName("Representação textual")
+    class Formatacao {
+
+        @Test
+        @DisplayName("toString contém id, status, clienteId, veiculoId e dataAbertura")
+        void toStringContemCamposBasicos() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            String texto = os.toString();
+            assertTrue(texto.contains(os.id().toString()));
+            assertTrue(texto.contains("RECEBIDA"));
+            assertTrue(texto.contains(CLIENTE_ID.toString()));
+            assertTrue(texto.contains(VEICULO_ID.toString()));
+            assertTrue(texto.contains(os.dataAbertura().toString()));
+        }
+
+        @Test
+        @DisplayName("toString não inclui orcamentoId quando ainda não anexado")
+        void toStringSemOrcamento() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertFalse(os.toString().contains("orcamentoId"));
+        }
+
+        @Test
+        @DisplayName("toString inclui orcamentoId após anexação")
+        void toStringComOrcamento() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            assertTrue(os.toString().contains(ORCAMENTO_ID.toString()));
+        }
+
+        @Test
+        @DisplayName("toString reflete o estado atual após transição")
+        void toStringReflexaTransicao() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.cancelar(MOTIVO);
+            assertTrue(os.toString().contains("CANCELADA"));
         }
     }
 }

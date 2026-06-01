@@ -4,6 +4,7 @@ import domain.cliente.ClienteId;
 import domain.orcamento.OrcamentoId;
 import domain.veiculo.VeiculoId;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class OrdemDeServico {
@@ -203,6 +204,35 @@ public final class OrdemDeServico {
 
     public void cancelar(String motivo) {
         this.estado = this.estado.aoCancelar(motivo);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OrdemDeServico outra)) {
+            return false;
+        }
+        return id.equals(outra.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("OrdemDeServico{id=").append(id)
+            .append(", status=").append(estado.status())
+            .append(", clienteId=").append(clienteId)
+            .append(", veiculoId=").append(veiculoId)
+            .append(", dataAbertura=").append(dataAbertura);
+        if (orcamentoId != null) {
+            sb.append(", orcamentoId=").append(orcamentoId);
+        }
+        return sb.append("}").toString();
     }
 
     private static String validarDiagnostico(String diagnostico) {
