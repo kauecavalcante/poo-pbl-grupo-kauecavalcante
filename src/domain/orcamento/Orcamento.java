@@ -23,7 +23,7 @@ public final class Orcamento {
         return new Orcamento(OrcamentoId.novo(), new ArrayList<>(), new Rascunho());
     }
 
-    public static Orcamento reconstituir(OrcamentoId id, List<ItemDeOrcamento> itens) {
+    public static Orcamento reconstituir(OrcamentoId id, List<ItemDeOrcamento> itens, EstadoOrcamento estado) {
         if (id == null) {
             throw new IllegalArgumentException("id do orçamento não pode ser nulo");
         }
@@ -35,7 +35,10 @@ public final class Orcamento {
                 throw new IllegalArgumentException("itens do orçamento não podem ser nulos");
             }
         }
-        return new Orcamento(id, new ArrayList<>(itens), new Rascunho());
+        if (estado == null) {
+            throw new IllegalArgumentException("estado do orçamento não pode ser nulo");
+        }
+        return new Orcamento(id, new ArrayList<>(itens), estado);
     }
 
     public OrcamentoId id() {

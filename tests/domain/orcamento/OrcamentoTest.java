@@ -309,7 +309,7 @@ class OrcamentoTest {
         void reconstituirPreservaIdEItens() {
             OrcamentoId id = OrcamentoId.novo();
             ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
-            Orcamento o = Orcamento.reconstituir(id, List.of(item));
+            Orcamento o = Orcamento.reconstituir(id, List.of(item), new Rascunho());
             assertEquals(id, o.id());
             assertEquals(1, o.quantidadeDeItens());
             assertEquals(item, o.itens().get(0));
@@ -319,7 +319,7 @@ class OrcamentoTest {
         @Test
         @DisplayName("reconstituir aceita lista vazia")
         void reconstituirComListaVazia() {
-            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), List.of());
+            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), List.of(), new Rascunho());
             assertTrue(o.ehVazio());
         }
 
@@ -328,7 +328,7 @@ class OrcamentoTest {
         void reconstituirRejeitaIdNulo() {
             IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> Orcamento.reconstituir(null, List.of())
+                () -> Orcamento.reconstituir(null, List.of(), new Rascunho())
             );
             assertEquals("id do orçamento não pode ser nulo", ex.getMessage());
         }
@@ -338,7 +338,7 @@ class OrcamentoTest {
         void reconstituirRejeitaListaNula() {
             IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> Orcamento.reconstituir(OrcamentoId.novo(), null)
+                () -> Orcamento.reconstituir(OrcamentoId.novo(), null, new Rascunho())
             );
             assertEquals("lista de itens não pode ser nula", ex.getMessage());
         }
@@ -349,7 +349,7 @@ class OrcamentoTest {
             ItemDeOrcamento valido = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
             IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> Orcamento.reconstituir(OrcamentoId.novo(), Arrays.asList(valido, null))
+                () -> Orcamento.reconstituir(OrcamentoId.novo(), Arrays.asList(valido, null), new Rascunho())
             );
             assertEquals("itens do orçamento não podem ser nulos", ex.getMessage());
         }
@@ -360,11 +360,50 @@ class OrcamentoTest {
             ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
             List<ItemDeOrcamento> entrada = new ArrayList<>();
             entrada.add(item);
-            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), entrada);
+            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), entrada, new Rascunho());
 
             entrada.clear();
 
             assertEquals(1, o.quantidadeDeItens());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita estado nulo")
+        void reconstituirRejeitaEstadoNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Orcamento.reconstituir(OrcamentoId.novo(), List.of(), null)
+            );
+            assertEquals("estado do orçamento não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir preserva o estado informado (Aprovado)")
+        void reconstituirPreservaEstadoAprovado() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), List.of(item), new Aprovado());
+            assertEquals(StatusOrcamento.APROVADO, o.status());
+        }
+
+        @Test
+        @DisplayName("reconstituir em estado terminal bloqueia edição de itens")
+        void reconstituirEmAprovadoBloqueiaEdicao() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), List.of(item), new Aprovado());
+            assertThrows(
+                IllegalStateException.class,
+                () -> o.adicionarItemDeMaoDeObra("Intruso", Preco.deReais("1.00"), 1)
+            );
+        }
+
+        @Test
+        @DisplayName("reconstituir em Rejeitado preserva motivo de rejeição")
+        void reconstituirEmRejeitadoPreservaMotivo() {
+            Orcamento o = Orcamento.reconstituir(
+                OrcamentoId.novo(), List.of(), new Rejeitado("Cliente desistiu")
+            );
+            assertEquals(StatusOrcamento.REJEITADO, o.status());
+            assertEquals(Optional.of("Cliente desistiu"), o.motivoRejeicao());
         }
     }
 
@@ -378,10 +417,10 @@ class OrcamentoTest {
             OrcamentoId id = OrcamentoId.novo();
             Orcamento a = Orcamento.reconstituir(id, List.of(
                 ItemDeOrcamento.deMaoDeObra("Troca A", Preco.deReais("10.00"), 1)
-            ));
+            ), new Rascunho());
             Orcamento b = Orcamento.reconstituir(id, List.of(
                 ItemDeOrcamento.deMaoDeObra("Troca B", Preco.deReais("999.00"), 5)
-            ));
+            ), new Rascunho());
             assertEquals(a, b);
             assertEquals(a.hashCode(), b.hashCode());
         }
