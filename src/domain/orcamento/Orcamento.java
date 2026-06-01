@@ -1,5 +1,6 @@
 package domain.orcamento;
 
+import domain.peca.PecaId;
 import domain.shared.Preco;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,5 +35,19 @@ public final class Orcamento {
         return itens.stream()
             .map(ItemDeOrcamento::subtotal)
             .reduce(Preco.zero(), Preco::somar);
+    }
+
+    public ItemDeOrcamentoId adicionarItemDePeca(PecaId pecaId, String descricao,
+                                                 Preco precoUnitario, int quantidade) {
+        ItemDeOrcamento item = ItemDeOrcamento.dePeca(pecaId, descricao, precoUnitario, quantidade);
+        itens.add(item);
+        return item.id();
+    }
+
+    public ItemDeOrcamentoId adicionarItemDeMaoDeObra(String descricao,
+                                                      Preco precoUnitario, int quantidade) {
+        ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra(descricao, precoUnitario, quantidade);
+        itens.add(item);
+        return item.id();
     }
 }
