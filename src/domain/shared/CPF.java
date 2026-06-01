@@ -18,6 +18,9 @@ public final class CPF {
         if (limpo.length() != TAMANHO || !contemSomenteDigitos(limpo)) {
             throw new IllegalArgumentException("cpf deve ter 11 dígitos");
         }
+        if (todosDigitosIguais(limpo)) {
+            throw new IllegalArgumentException("cpf inválido");
+        }
         return new CPF(limpo);
     }
 
@@ -28,6 +31,16 @@ public final class CPF {
     private static boolean contemSomenteDigitos(String s) {
         for (int i = 0; i < s.length(); i++) {
             if (!Character.isDigit(s.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean todosDigitosIguais(String s) {
+        char primeiro = s.charAt(0);
+        for (int i = 1; i < s.length(); i++) {
+            if (s.charAt(i) != primeiro) {
                 return false;
             }
         }

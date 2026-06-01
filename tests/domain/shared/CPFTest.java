@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class CPFTest {
 
@@ -102,6 +104,33 @@ class CPFTest {
                 () -> CPF.de("1234567890a")
             );
             assertEquals("cpf deve ter 11 dígitos", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Sequências de dígitos repetidos")
+    class DigitosRepetidos {
+
+        @ParameterizedTest(name = "rejeita {0}")
+        @ValueSource(strings = {
+            "00000000000",
+            "11111111111",
+            "22222222222",
+            "33333333333",
+            "44444444444",
+            "55555555555",
+            "66666666666",
+            "77777777777",
+            "88888888888",
+            "99999999999"
+        })
+        @DisplayName("rejeita CPF com todos os dígitos iguais")
+        void rejeitaSequenciaRepetida(String entrada) {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> CPF.de(entrada)
+            );
+            assertEquals("cpf inválido", ex.getMessage());
         }
     }
 }
