@@ -99,4 +99,22 @@ public final class OrdemDeServico {
     public Optional<String> motivoCancelamento() {
         return estado instanceof Cancelada c ? Optional.of(c.motivo()) : Optional.empty();
     }
+
+    public void registrarDiagnostico(String diagnostico) {
+        if (status() != StatusOS.RECEBIDA) {
+            throw new IllegalStateException("diagnóstico só pode ser registrado em OS no estado RECEBIDA");
+        }
+        this.diagnostico = validarDiagnostico(diagnostico);
+    }
+
+    private static String validarDiagnostico(String diagnostico) {
+        if (diagnostico == null || diagnostico.trim().isEmpty()) {
+            throw new IllegalArgumentException("diagnóstico não pode ser vazio");
+        }
+        String normalizado = diagnostico.trim();
+        if (normalizado.length() < 5) {
+            throw new IllegalArgumentException("diagnóstico deve ter ao menos 5 caracteres");
+        }
+        return normalizado;
+    }
 }

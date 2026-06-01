@@ -91,4 +91,55 @@ class OrdemDeServicoTest {
             assertEquals("veículo da OS não pode ser nulo", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Registro de diagnóstico")
+    class Diagnostico {
+
+        @Test
+        @DisplayName("registrarDiagnostico armazena texto válido com trim")
+        void registrarDiagnosticoArmazena() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico("   Suspensão dianteira com folga   ");
+            assertEquals(Optional.of("Suspensão dianteira com folga"), os.diagnostico());
+        }
+
+        @Test
+        @DisplayName("registrarDiagnostico rejeita texto nulo")
+        void registrarDiagnosticoRejeitaNulo() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> os.registrarDiagnostico(null)
+            );
+            assertEquals("diagnóstico não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("registrarDiagnostico rejeita texto vazio ou só espaços")
+        void registrarDiagnosticoRejeitaVazio() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertThrows(IllegalArgumentException.class, () -> os.registrarDiagnostico("   "));
+        }
+
+        @Test
+        @DisplayName("registrarDiagnostico rejeita texto com menos de 5 caracteres após trim")
+        void registrarDiagnosticoRejeitaCurto() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> os.registrarDiagnostico("ABC")
+            );
+            assertEquals("diagnóstico deve ter ao menos 5 caracteres", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("registrarDiagnostico falha não modifica o diagnóstico já existente")
+        void registroFalhaPreservaDiagnostico() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico("Suspensão com folga");
+            assertThrows(IllegalArgumentException.class, () -> os.registrarDiagnostico(""));
+            assertEquals(Optional.of("Suspensão com folga"), os.diagnostico());
+        }
+    }
 }
