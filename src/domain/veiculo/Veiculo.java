@@ -79,6 +79,18 @@ public final class Veiculo {
         return dono;
     }
 
+    public void alterarMarca(String novaMarca) {
+        this.marca = validarMarca(novaMarca);
+    }
+
+    public void alterarModelo(String novoModelo) {
+        this.modelo = validarModelo(novoModelo);
+    }
+
+    public void alterarAno(int novoAno) {
+        this.ano = validarAno(novoAno);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

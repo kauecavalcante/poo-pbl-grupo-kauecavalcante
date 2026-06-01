@@ -272,4 +272,97 @@ class VeiculoTest {
             assertTrue(v.equals(v));
         }
     }
+
+    @Nested
+    @DisplayName("Mutações controladas")
+    class Mutacoes {
+
+        @Test
+        @DisplayName("alterarMarca substitui o valor preservando ID e placa")
+        void alterarMarcaPreservaIdentidade() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            VeiculoId idAntes = v.id();
+            v.alterarMarca("Volkswagen");
+            assertEquals("Volkswagen", v.marca());
+            assertSame(idAntes, v.id());
+            assertSame(PLACA, v.placa());
+        }
+
+        @Test
+        @DisplayName("alterarMarca aplica trim")
+        void alterarMarcaAplicaTrim() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            v.alterarMarca("   Volkswagen   ");
+            assertEquals("Volkswagen", v.marca());
+        }
+
+        @Test
+        @DisplayName("alterarMarca rejeita valor nulo")
+        void alterarMarcaRejeitaNulo() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertThrows(IllegalArgumentException.class, () -> v.alterarMarca(null));
+        }
+
+        @Test
+        @DisplayName("alterarMarca rejeita valor curto")
+        void alterarMarcaRejeitaCurto() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> v.alterarMarca("A")
+            );
+            assertEquals("marca deve ter ao menos 2 caracteres", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarModelo substitui o valor preservando identidade")
+        void alterarModeloPreservaIdentidade() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            VeiculoId idAntes = v.id();
+            v.alterarModelo("Palio");
+            assertEquals("Palio", v.modelo());
+            assertSame(idAntes, v.id());
+        }
+
+        @Test
+        @DisplayName("alterarModelo rejeita valor vazio")
+        void alterarModeloRejeitaVazio() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> v.alterarModelo("   ")
+            );
+            assertEquals("modelo não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarAno substitui o valor preservando identidade")
+        void alterarAnoPreservaIdentidade() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            VeiculoId idAntes = v.id();
+            v.alterarAno(2015);
+            assertEquals(2015, v.ano());
+            assertSame(idAntes, v.id());
+        }
+
+        @Test
+        @DisplayName("alterarAno rejeita ano fora do intervalo")
+        void alterarAnoRejeitaForaDoIntervalo() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertThrows(IllegalArgumentException.class, () -> v.alterarAno(1800));
+            assertThrows(IllegalArgumentException.class, () -> v.alterarAno(Year.now().getValue() + 5));
+        }
+
+        @Test
+        @DisplayName("alteração falha não modifica o estado do veículo")
+        void alteracaoFalhaNaoModificaEstado() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertThrows(IllegalArgumentException.class, () -> v.alterarMarca("X"));
+            assertThrows(IllegalArgumentException.class, () -> v.alterarModelo(""));
+            assertThrows(IllegalArgumentException.class, () -> v.alterarAno(1500));
+            assertEquals("Fiat", v.marca());
+            assertEquals("Uno", v.modelo());
+            assertEquals(2010, v.ano());
+        }
+    }
 }
