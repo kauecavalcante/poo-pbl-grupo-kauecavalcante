@@ -160,4 +160,25 @@ class ExcecoesDeAplicacaoTest {
             assertTrue(new CodigoDePecaJaCadastrado("FLT-1001") instanceof RuntimeException);
         }
     }
+
+    @Nested
+    @DisplayName("VeiculoNaoPertenceAoCliente")
+    class VeiculoNaoPertenceAoClienteTest {
+
+        @Test
+        @DisplayName("mensagem contém o id do veículo e do cliente")
+        void mensagemContemAmbosIds() {
+            VeiculoId veiculoId = VeiculoId.novo();
+            ClienteId clienteId = ClienteId.novo();
+            VeiculoNaoPertenceAoCliente ex = new VeiculoNaoPertenceAoCliente(veiculoId, clienteId);
+            assertTrue(ex.getMessage().contains(veiculoId.toString()));
+            assertTrue(ex.getMessage().contains(clienteId.toString()));
+        }
+
+        @Test
+        @DisplayName("é RuntimeException")
+        void ehRuntimeException() {
+            assertTrue(new VeiculoNaoPertenceAoCliente(VeiculoId.novo(), ClienteId.novo()) instanceof RuntimeException);
+        }
+    }
 }
