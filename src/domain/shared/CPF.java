@@ -1,5 +1,7 @@
 package domain.shared;
 
+import java.util.Objects;
+
 public final class CPF {
 
     private static final int TAMANHO = 11;
@@ -26,6 +28,34 @@ public final class CPF {
 
     public String numero() {
         return numero;
+    }
+
+    public String formatado() {
+        return numero.substring(0, 3) + "."
+            + numero.substring(3, 6) + "."
+            + numero.substring(6, 9) + "-"
+            + numero.substring(9, 11);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CPF outro)) {
+            return false;
+        }
+        return numero.equals(outro.numero);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numero);
+    }
+
+    @Override
+    public String toString() {
+        return formatado();
     }
 
     private static boolean contemSomenteDigitos(String s) {

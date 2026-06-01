@@ -1,7 +1,10 @@
 package domain.shared;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -187,6 +190,63 @@ class CPFTest {
                 () -> CPF.de(entrada)
             );
             assertEquals("cpf inválido", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Formatação e igualdade")
+    class Apresentacao {
+
+        @Test
+        @DisplayName("formatado retorna CPF com pontuação canônica")
+        void formatadoComMascara() {
+            CPF cpf = CPF.de(CPF_VALIDO_SEM_MASCARA);
+            assertEquals(CPF_VALIDO_COM_MASCARA, cpf.formatado());
+        }
+
+        @Test
+        @DisplayName("toString retorna o mesmo formato de formatado")
+        void toStringIgualAoFormatado() {
+            CPF cpf = CPF.de(CPF_VALIDO_SEM_MASCARA);
+            assertEquals(cpf.formatado(), cpf.toString());
+        }
+
+        @Test
+        @DisplayName("dois CPFs criados a partir de representações diferentes são iguais")
+        void igualdadeIndependeDaMascaraNaEntrada() {
+            CPF semMascara = CPF.de(CPF_VALIDO_SEM_MASCARA);
+            CPF comMascara = CPF.de(CPF_VALIDO_COM_MASCARA);
+            assertEquals(semMascara, comMascara);
+            assertEquals(semMascara.hashCode(), comMascara.hashCode());
+        }
+
+        @Test
+        @DisplayName("CPFs com números diferentes não são iguais")
+        void distintosQuandoNumerosDiferentes() {
+            CPF a = CPF.de("529.982.247-25");
+            CPF b = CPF.de("111.444.777-35");
+            assertNotEquals(a, b);
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            CPF cpf = CPF.de(CPF_VALIDO_SEM_MASCARA);
+            assertFalse(cpf.equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            CPF cpf = CPF.de(CPF_VALIDO_SEM_MASCARA);
+            assertFalse(cpf.equals(CPF_VALIDO_SEM_MASCARA));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            CPF cpf = CPF.de(CPF_VALIDO_SEM_MASCARA);
+            assertTrue(cpf.equals(cpf));
         }
     }
 }
