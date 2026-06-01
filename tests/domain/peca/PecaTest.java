@@ -383,4 +383,109 @@ class PecaTest {
             assertSame(PRECO_PADRAO, p.preco());
         }
     }
+
+    @Nested
+    @DisplayName("Movimentações de estoque")
+    class Movimentacoes {
+
+        @Test
+        @DisplayName("reduzirEstoque subtrai a quantidade do estoque atual")
+        void reduzirEstoqueSubtrai() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            p.reduzirEstoque(3);
+            assertEquals(7, p.estoque());
+        }
+
+        @Test
+        @DisplayName("reduzirEstoque rejeita quantidade zero")
+        void reduzirEstoqueRejeitaZero() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.reduzirEstoque(0)
+            );
+            assertEquals("quantidade a reduzir deve ser positiva", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reduzirEstoque rejeita quantidade negativa")
+        void reduzirEstoqueRejeitaNegativa() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.reduzirEstoque(-1)
+            );
+            assertEquals("quantidade a reduzir deve ser positiva", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reduzirEstoque rejeita quantidade maior que estoque atual")
+        void reduzirEstoqueRejeitaMaiorQueEstoque() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 5);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.reduzirEstoque(6)
+            );
+            assertEquals("estoque insuficiente", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reduzirEstoque até zerar é permitido")
+        void reduzirEstoqueAteZerarPermitido() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 5);
+            p.reduzirEstoque(5);
+            assertEquals(0, p.estoque());
+        }
+
+        @Test
+        @DisplayName("reduzirEstoque falha não modifica o estoque")
+        void reduzirEstoqueFalhaNaoModificaEstoque() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 5);
+            assertThrows(IllegalArgumentException.class, () -> p.reduzirEstoque(0));
+            assertThrows(IllegalArgumentException.class, () -> p.reduzirEstoque(-3));
+            assertThrows(IllegalArgumentException.class, () -> p.reduzirEstoque(10));
+            assertEquals(5, p.estoque());
+        }
+
+        @Test
+        @DisplayName("reabastecerEstoque soma a quantidade ao estoque atual")
+        void reabastecerEstoqueSoma() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            p.reabastecerEstoque(5);
+            assertEquals(15, p.estoque());
+        }
+
+        @Test
+        @DisplayName("reabastecerEstoque rejeita quantidade zero")
+        void reabastecerEstoqueRejeitaZero() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.reabastecerEstoque(0)
+            );
+            assertEquals("quantidade a reabastecer deve ser positiva", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reabastecerEstoque rejeita quantidade negativa")
+        void reabastecerEstoqueRejeitaNegativa() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.reabastecerEstoque(-1)
+            );
+            assertEquals("quantidade a reabastecer deve ser positiva", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("sequência reabastecer e reduzir mantém invariante de estoque não-negativo")
+        void sequenciaIntegrada() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 0);
+            p.reabastecerEstoque(20);
+            p.reduzirEstoque(7);
+            p.reduzirEstoque(5);
+            p.reabastecerEstoque(2);
+            assertEquals(10, p.estoque());
+        }
+    }
 }

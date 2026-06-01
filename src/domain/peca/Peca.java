@@ -86,6 +86,23 @@ public final class Peca {
         this.preco = novoPreco;
     }
 
+    public void reduzirEstoque(int quantidade) {
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("quantidade a reduzir deve ser positiva");
+        }
+        if (quantidade > estoque) {
+            throw new IllegalArgumentException("estoque insuficiente");
+        }
+        this.estoque -= quantidade;
+    }
+
+    public void reabastecerEstoque(int quantidade) {
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("quantidade a reabastecer deve ser positiva");
+        }
+        this.estoque += quantidade;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
