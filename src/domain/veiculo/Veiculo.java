@@ -115,6 +115,16 @@ public final class Veiculo {
         return Objects.hash(id);
     }
 
+    @Override
+    public String toString() {
+        return "Veiculo{id=" + id
+            + ", placa=" + placa
+            + ", marca=" + marca
+            + ", modelo=" + modelo
+            + ", ano=" + ano
+            + ", dono=" + dono + "}";
+    }
+
     private static void exigirPlacaNaoNula(Placa placa) {
         if (placa == null) {
             throw new IllegalArgumentException("placa não pode ser nula");

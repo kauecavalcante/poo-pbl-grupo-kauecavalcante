@@ -424,4 +424,45 @@ class VeiculoTest {
             assertEquals(terceiro, v.dono());
         }
     }
+
+    @Nested
+    @DisplayName("Representação textual")
+    class Formatacao {
+
+        @Test
+        @DisplayName("toString contém o ID do veículo")
+        void toStringContemId() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertTrue(v.toString().contains(v.id().toString()));
+        }
+
+        @Test
+        @DisplayName("toString contém a placa formatada")
+        void toStringContemPlaca() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertTrue(v.toString().contains(PLACA.formatada()));
+        }
+
+        @Test
+        @DisplayName("toString contém marca e modelo")
+        void toStringContemMarcaEModelo() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertTrue(v.toString().contains("Fiat"));
+            assertTrue(v.toString().contains("Uno"));
+        }
+
+        @Test
+        @DisplayName("toString contém o ano")
+        void toStringContemAno() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertTrue(v.toString().contains("2010"));
+        }
+
+        @Test
+        @DisplayName("toString contém o ID do dono")
+        void toStringContemDono() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertTrue(v.toString().contains(DONO.toString()));
+        }
+    }
 }
