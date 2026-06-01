@@ -73,6 +73,13 @@ public final class Cliente {
         return Objects.hash(id);
     }
 
+    // toString omite o telefone deliberadamente — dado pessoal não deve vazar
+    // em logs ou mensagens de erro acidentais.
+    @Override
+    public String toString() {
+        return "Cliente{id=" + id + ", nome=" + nome + ", cpf=" + cpf + "}";
+    }
+
     private static void exigirCpfNaoNulo(CPF cpf) {
         if (cpf == null) {
             throw new IllegalArgumentException("cpf não pode ser nulo");

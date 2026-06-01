@@ -374,4 +374,37 @@ class ClienteTest {
             assertEquals("11912345678", c.telefone());
         }
     }
+
+    @Nested
+    @DisplayName("Representação textual")
+    class Formatacao {
+
+        @Test
+        @DisplayName("toString contém o ID do cliente")
+        void toStringContemId() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertTrue(c.toString().contains(c.id().toString()));
+        }
+
+        @Test
+        @DisplayName("toString contém o nome do cliente")
+        void toStringContemNome() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertTrue(c.toString().contains("Maria Silva"));
+        }
+
+        @Test
+        @DisplayName("toString contém o CPF formatado")
+        void toStringContemCpfFormatado() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertTrue(c.toString().contains("529.982.247-25"));
+        }
+
+        @Test
+        @DisplayName("toString não expõe o telefone")
+        void toStringNaoExpoeTelefone() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertFalse(c.toString().contains(c.telefone()));
+        }
+    }
 }
