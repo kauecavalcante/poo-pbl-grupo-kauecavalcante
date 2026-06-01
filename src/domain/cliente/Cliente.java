@@ -1,6 +1,7 @@
 package domain.cliente;
 
 import domain.shared.CPF;
+import java.util.Objects;
 
 public final class Cliente {
 
@@ -21,6 +22,14 @@ public final class Cliente {
         return new Cliente(ClienteId.novo(), validarNome(nome), cpf, validarTelefone(telefone));
     }
 
+    public static Cliente reconstituir(ClienteId id, String nome, CPF cpf, String telefone) {
+        if (id == null) {
+            throw new IllegalArgumentException("id do cliente não pode ser nulo");
+        }
+        exigirCpfNaoNulo(cpf);
+        return new Cliente(id, validarNome(nome), cpf, validarTelefone(telefone));
+    }
+
     public ClienteId id() {
         return id;
     }
@@ -35,6 +44,25 @@ public final class Cliente {
 
     public String telefone() {
         return telefone;
+    }
+
+    // Entidade: igualdade definida exclusivamente pela identidade — duas versões
+    // do mesmo cliente (ex: antes e depois de alterar o nome) devem ser tratadas
+    // como o mesmo cliente em coleções e comparações de domínio.
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Cliente outro)) {
+            return false;
+        }
+        return id.equals(outro.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     private static void exigirCpfNaoNulo(CPF cpf) {

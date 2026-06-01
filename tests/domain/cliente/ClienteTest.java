@@ -1,9 +1,12 @@
 package domain.cliente;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.shared.CPF;
 import org.junit.jupiter.api.DisplayName;
@@ -163,6 +166,103 @@ class ClienteTest {
                 () -> Cliente.novo("Maria Silva", CPF_VALIDO, "(11) 1234")
             );
             assertEquals("telefone deve ter ao menos 8 dígitos", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Reconstituição a partir de identidade existente")
+    class Reconstituicao {
+
+        @Test
+        @DisplayName("reconstituir preserva o ID informado")
+        void reconstituirPreservaId() {
+            ClienteId id = ClienteId.novo();
+            Cliente c = Cliente.reconstituir(id, "Maria Silva", CPF_VALIDO, "11912345678");
+            assertEquals(id, c.id());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita ID nulo")
+        void reconstituirRejeitaIdNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Cliente.reconstituir(null, "Maria Silva", CPF_VALIDO, "11912345678")
+            );
+            assertEquals("id do cliente não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de nome")
+        void reconstituirValidaNome() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Cliente.reconstituir(ClienteId.novo(), "", CPF_VALIDO, "11912345678")
+            );
+            assertEquals("nome do cliente não pode ser vazio", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de cpf")
+        void reconstituirValidaCpf() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Cliente.reconstituir(ClienteId.novo(), "Maria Silva", null, "11912345678")
+            );
+            assertEquals("cpf não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de telefone")
+        void reconstituirValidaTelefone() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Cliente.reconstituir(ClienteId.novo(), "Maria Silva", CPF_VALIDO, "123")
+            );
+            assertEquals("telefone deve ter ao menos 8 dígitos", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Igualdade por identidade")
+    class Igualdade {
+
+        @Test
+        @DisplayName("dois clientes com mesmo ID são iguais mesmo com nome e telefone divergentes")
+        void iguaisQuandoMesmoIdAindaQueDadosMudem() {
+            ClienteId id = ClienteId.novo();
+            Cliente antes = Cliente.reconstituir(id, "Maria Silva", CPF_VALIDO, "11912345678");
+            Cliente depois = Cliente.reconstituir(id, "Maria S. Pereira", CPF_VALIDO, "11999998888");
+            assertEquals(antes, depois);
+            assertEquals(antes.hashCode(), depois.hashCode());
+        }
+
+        @Test
+        @DisplayName("dois clientes com IDs diferentes não são iguais mesmo com dados idênticos")
+        void distintosQuandoIdsDiferentes() {
+            Cliente a = Cliente.reconstituir(ClienteId.novo(), "Maria Silva", CPF_VALIDO, "11912345678");
+            Cliente b = Cliente.reconstituir(ClienteId.novo(), "Maria Silva", CPF_VALIDO, "11912345678");
+            assertNotEquals(a, b);
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertFalse(c.equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertFalse(c.equals(c.id()));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            Cliente c = Cliente.novo("Maria Silva", CPF_VALIDO, "11912345678");
+            assertTrue(c.equals(c));
         }
     }
 }
