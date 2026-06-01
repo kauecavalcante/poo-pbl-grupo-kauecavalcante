@@ -443,4 +443,172 @@ class OrdemDeServicoTest {
             assertEquals(Optional.empty(), os.motivoCancelamento());
         }
     }
+
+    @Nested
+    @DisplayName("Reconstituição a partir de identidade existente")
+    class Reconstituicao {
+
+        private final OrdemDeServicoId ID = OrdemDeServicoId.novo();
+        private final LocalDate ABERTURA = LocalDate.of(2024, 1, 10);
+
+        @Test
+        @DisplayName("reconstituir preserva todos os campos informados")
+        void reconstituirPreservaCampos() {
+            LocalDate conclusao = LocalDate.of(2024, 1, 15);
+            LocalDate entrega = LocalDate.of(2024, 1, 16);
+            OrdemDeServico os = OrdemDeServico.reconstituir(
+                ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                new Entregue(), ABERTURA, conclusao, entrega
+            );
+            assertEquals(ID, os.id());
+            assertSame(CLIENTE_ID, os.clienteId());
+            assertSame(VEICULO_ID, os.veiculoId());
+            assertEquals(Optional.of(ORCAMENTO_ID), os.orcamentoId());
+            assertEquals(Optional.of(DIAGNOSTICO), os.diagnostico());
+            assertEquals(StatusOS.ENTREGUE, os.status());
+            assertEquals(ABERTURA, os.dataAbertura());
+            assertEquals(Optional.of(conclusao), os.dataConclusao());
+            assertEquals(Optional.of(entrega), os.dataEntrega());
+        }
+
+        @Test
+        @DisplayName("reconstituir aceita OS em RECEBIDA sem datas finais")
+        void reconstituirRecebida() {
+            OrdemDeServico os = OrdemDeServico.reconstituir(
+                ID, CLIENTE_ID, VEICULO_ID, null, null,
+                new Recebida(), ABERTURA, null, null
+            );
+            assertEquals(StatusOS.RECEBIDA, os.status());
+            assertEquals(Optional.empty(), os.dataConclusao());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita id nulo")
+        void rejeitaIdNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(null, CLIENTE_ID, VEICULO_ID, null, null,
+                    new Recebida(), ABERTURA, null, null)
+            );
+            assertEquals("id da ordem de serviço não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita estado nulo")
+        void rejeitaEstadoNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, null, null,
+                    null, ABERTURA, null, null)
+            );
+            assertEquals("estado da OS não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita data de abertura nula")
+        void rejeitaDataAberturaNula() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, null, null,
+                    new Recebida(), null, null, null)
+            );
+            assertEquals("data de abertura não pode ser nula", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("ENTREGUE exige dataConclusao presente")
+        void entregueExigeDataConclusao() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new Entregue(), ABERTURA, null, LocalDate.of(2024, 1, 16))
+            );
+            assertEquals("OS no estado ENTREGUE precisa ter dataConclusao", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("ENTREGUE exige dataEntrega presente")
+        void entregueExigeDataEntrega() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new Entregue(), ABERTURA, LocalDate.of(2024, 1, 15), null)
+            );
+            assertEquals("OS no estado ENTREGUE precisa ter dataEntrega", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("CONCLUIDA exige dataConclusao presente")
+        void concluidaExigeDataConclusao() {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new Concluida(), ABERTURA, null, null)
+            );
+        }
+
+        @Test
+        @DisplayName("CONCLUIDA não pode ter dataEntrega")
+        void concluidaNaoPodeTerDataEntrega() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new Concluida(), ABERTURA, LocalDate.of(2024, 1, 15), LocalDate.of(2024, 1, 16))
+            );
+            assertEquals("OS no estado CONCLUIDA não pode ter dataEntrega", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("RECEBIDA não pode ter dataConclusao")
+        void recebidaNaoPodeTerDataConclusao() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, null, null,
+                    new Recebida(), ABERTURA, LocalDate.of(2024, 1, 15), null)
+            );
+            assertEquals("OS no estado RECEBIDA não pode ter dataConclusao", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("EM_EXECUCAO não pode ter dataConclusao nem dataEntrega")
+        void emExecucaoSemDatasFinais() {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new EmExecucao(), ABERTURA, LocalDate.now(), null)
+            );
+        }
+
+        @Test
+        @DisplayName("REJEITADA não pode ter dataConclusao nem dataEntrega")
+        void rejeitadaSemDatasFinais() {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new Rejeitada(MOTIVO), ABERTURA, LocalDate.now(), null)
+            );
+        }
+
+        @Test
+        @DisplayName("CANCELADA aceita dataConclusao presente (cancelamento após conclusão)")
+        void canceladaAceitaDataConclusao() {
+            OrdemDeServico os = OrdemDeServico.reconstituir(
+                ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                new Cancelada(MOTIVO), ABERTURA, LocalDate.of(2024, 1, 15), null
+            );
+            assertEquals(StatusOS.CANCELADA, os.status());
+            assertEquals(Optional.of(LocalDate.of(2024, 1, 15)), os.dataConclusao());
+        }
+
+        @Test
+        @DisplayName("CANCELADA não pode ter dataEntrega")
+        void canceladaNaoPodeTerDataEntrega() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> OrdemDeServico.reconstituir(ID, CLIENTE_ID, VEICULO_ID, ORCAMENTO_ID, DIAGNOSTICO,
+                    new Cancelada(MOTIVO), ABERTURA, null, LocalDate.now())
+            );
+            assertEquals("OS no estado CANCELADA não pode ter dataEntrega", ex.getMessage());
+        }
+    }
 }

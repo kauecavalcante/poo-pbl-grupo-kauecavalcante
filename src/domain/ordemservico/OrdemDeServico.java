@@ -52,6 +52,68 @@ public final class OrdemDeServico {
         );
     }
 
+    public static OrdemDeServico reconstituir(OrdemDeServicoId id, ClienteId clienteId, VeiculoId veiculoId,
+                                              OrcamentoId orcamentoId, String diagnostico, EstadoOS estado,
+                                              LocalDate dataAbertura, LocalDate dataConclusao, LocalDate dataEntrega) {
+        if (id == null) {
+            throw new IllegalArgumentException("id da ordem de serviço não pode ser nulo");
+        }
+        if (clienteId == null) {
+            throw new IllegalArgumentException("cliente da OS não pode ser nulo");
+        }
+        if (veiculoId == null) {
+            throw new IllegalArgumentException("veículo da OS não pode ser nulo");
+        }
+        if (estado == null) {
+            throw new IllegalArgumentException("estado da OS não pode ser nulo");
+        }
+        if (dataAbertura == null) {
+            throw new IllegalArgumentException("data de abertura não pode ser nula");
+        }
+        String diagnosticoNormalizado = diagnostico == null ? null : validarDiagnostico(diagnostico);
+        validarCoerenciaEstadoDatas(estado.status(), dataConclusao, dataEntrega);
+        return new OrdemDeServico(id, clienteId, veiculoId, orcamentoId, diagnosticoNormalizado, estado,
+            dataAbertura, dataConclusao, dataEntrega);
+    }
+
+    // Coerência cruzada: o estado restringe quais datas finais podem existir.
+    // ENTREGUE exige ambas; CONCLUIDA exige só dataConclusao; estados anteriores
+    // não podem ter nenhuma. CANCELADA é tolerante a dataConclusao (pode ter
+    // sido cancelada após Concluida), mas nunca a dataEntrega.
+    private static void validarCoerenciaEstadoDatas(StatusOS status, LocalDate dataConclusao, LocalDate dataEntrega) {
+        switch (status) {
+            case ENTREGUE -> {
+                if (dataConclusao == null) {
+                    throw new IllegalArgumentException("OS no estado ENTREGUE precisa ter dataConclusao");
+                }
+                if (dataEntrega == null) {
+                    throw new IllegalArgumentException("OS no estado ENTREGUE precisa ter dataEntrega");
+                }
+            }
+            case CONCLUIDA -> {
+                if (dataConclusao == null) {
+                    throw new IllegalArgumentException("OS no estado CONCLUIDA precisa ter dataConclusao");
+                }
+                if (dataEntrega != null) {
+                    throw new IllegalArgumentException("OS no estado CONCLUIDA não pode ter dataEntrega");
+                }
+            }
+            case CANCELADA -> {
+                if (dataEntrega != null) {
+                    throw new IllegalArgumentException("OS no estado CANCELADA não pode ter dataEntrega");
+                }
+            }
+            case REJEITADA, RECEBIDA, AGUARDANDO_APROVACAO, EM_EXECUCAO -> {
+                if (dataConclusao != null) {
+                    throw new IllegalArgumentException("OS no estado " + status + " não pode ter dataConclusao");
+                }
+                if (dataEntrega != null) {
+                    throw new IllegalArgumentException("OS no estado " + status + " não pode ter dataEntrega");
+                }
+            }
+        }
+    }
+
     public OrdemDeServicoId id() {
         return id;
     }
