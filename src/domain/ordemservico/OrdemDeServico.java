@@ -121,6 +121,14 @@ public final class OrdemDeServico {
         this.estado = this.estado.aoEnviarParaAprovacao();
     }
 
+    public void aprovar() {
+        this.estado = this.estado.aoAprovar();
+    }
+
+    public void rejeitar(String motivo) {
+        this.estado = this.estado.aoRejeitar(motivo);
+    }
+
     private static String validarDiagnostico(String diagnostico) {
         if (diagnostico == null || diagnostico.trim().isEmpty()) {
             throw new IllegalArgumentException("diagnóstico não pode ser vazio");

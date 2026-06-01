@@ -210,4 +210,72 @@ class OrdemDeServicoTest {
             assertEquals("diagnóstico só pode ser registrado em OS no estado RECEBIDA", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Aprovação e rejeição")
+    class AprovacaoRejeicao {
+
+        @Test
+        @DisplayName("aprovar a partir de AGUARDANDO_APROVACAO transita para EM_EXECUCAO")
+        void aprovarTransita() {
+            OrdemDeServico os = aguardandoAprovacao();
+            os.aprovar();
+            assertEquals(StatusOS.EM_EXECUCAO, os.status());
+        }
+
+        @Test
+        @DisplayName("rejeitar a partir de AGUARDANDO_APROVACAO transita para REJEITADA")
+        void rejeitarTransita() {
+            OrdemDeServico os = aguardandoAprovacao();
+            os.rejeitar(MOTIVO);
+            assertEquals(StatusOS.REJEITADA, os.status());
+            assertEquals(Optional.of(MOTIVO), os.motivoRejeicao());
+        }
+
+        @Test
+        @DisplayName("aprovar em RECEBIDA é bloqueado")
+        void aprovarEmRecebidaBloqueado() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertThrows(IllegalStateException.class, os::aprovar);
+        }
+
+        @Test
+        @DisplayName("rejeitar em RECEBIDA é bloqueado")
+        void rejeitarEmRecebidaBloqueado() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertThrows(IllegalStateException.class, () -> os.rejeitar(MOTIVO));
+        }
+
+        @Test
+        @DisplayName("aprovar duas vezes é bloqueado")
+        void aprovarDuasVezesBloqueado() {
+            OrdemDeServico os = aguardandoAprovacao();
+            os.aprovar();
+            assertThrows(IllegalStateException.class, os::aprovar);
+        }
+
+        @Test
+        @DisplayName("rejeitar com motivo inválido lança IllegalArgumentException")
+        void rejeitarComMotivoInvalido() {
+            OrdemDeServico os = aguardandoAprovacao();
+            assertThrows(IllegalArgumentException.class, () -> os.rejeitar(null));
+            assertThrows(IllegalArgumentException.class, () -> os.rejeitar("AB"));
+        }
+
+        @Test
+        @DisplayName("motivoRejeicao permanece vazio fora de REJEITADA")
+        void motivoRejeicaoVazioForaDeRejeitada() {
+            OrdemDeServico os = aguardandoAprovacao();
+            assertEquals(Optional.empty(), os.motivoRejeicao());
+            os.aprovar();
+            assertEquals(Optional.empty(), os.motivoRejeicao());
+        }
+
+        private OrdemDeServico aguardandoAprovacao() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            return os;
+        }
+    }
 }
