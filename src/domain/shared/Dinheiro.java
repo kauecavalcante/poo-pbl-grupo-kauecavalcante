@@ -2,7 +2,9 @@ package domain.shared;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.Currency;
+import java.util.Locale;
 import java.util.Objects;
 
 public final class Dinheiro {
@@ -12,6 +14,7 @@ public final class Dinheiro {
     // sequências de arredondamentos, padrão para cálculo financeiro.
     private static final RoundingMode ARREDONDAMENTO = RoundingMode.HALF_EVEN;
     private static final Currency REAL = Currency.getInstance("BRL");
+    private static final Locale LOCALE_BR = Locale.of("pt", "BR");
 
     private final BigDecimal valor;
     private final Currency moeda;
@@ -104,5 +107,20 @@ public final class Dinheiro {
     @Override
     public int hashCode() {
         return Objects.hash(valor, moeda);
+    }
+
+    @Override
+    public String toString() {
+        if (moeda.equals(REAL)) {
+            return "R$ " + formatarBrasileiro(valor);
+        }
+        return moeda.getCurrencyCode() + " " + valor.toPlainString();
+    }
+
+    private static String formatarBrasileiro(BigDecimal v) {
+        NumberFormat nf = NumberFormat.getNumberInstance(LOCALE_BR);
+        nf.setMinimumFractionDigits(ESCALA);
+        nf.setMaximumFractionDigits(ESCALA);
+        return nf.format(v);
     }
 }

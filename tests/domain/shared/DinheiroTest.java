@@ -318,4 +318,47 @@ class DinheiroTest {
             assertTrue(d.ehZero());
         }
     }
+
+    @Nested
+    @DisplayName("Representação textual")
+    class Formatacao {
+
+        @Test
+        @DisplayName("BRL com milhar usa ponto como separador e vírgula como decimal")
+        void brlComMilhar() {
+            assertEquals("R$ 1.234,56", Dinheiro.deReais("1234.56").toString());
+        }
+
+        @Test
+        @DisplayName("BRL sem milhar mostra apenas duas casas decimais")
+        void brlSemMilhar() {
+            assertEquals("R$ 10,00", Dinheiro.deReais("10").toString());
+        }
+
+        @Test
+        @DisplayName("BRL zero é apresentado como R$ 0,00")
+        void brlZero() {
+            assertEquals("R$ 0,00", Dinheiro.zeroReais().toString());
+        }
+
+        @Test
+        @DisplayName("BRL negativo apresenta sinal antes do valor")
+        void brlNegativo() {
+            assertEquals("R$ -10,00", Dinheiro.deReais("-10").toString());
+        }
+
+        @Test
+        @DisplayName("moeda diferente de BRL usa código ISO seguido do valor")
+        void outraMoedaUsaCodigoIso() {
+            Dinheiro d = Dinheiro.de(new BigDecimal("10.00"), USD);
+            assertEquals("USD 10.00", d.toString());
+        }
+
+        @Test
+        @DisplayName("moeda diferente de BRL preserva sinal negativo")
+        void outraMoedaPreservaSinal() {
+            Dinheiro d = Dinheiro.de(new BigDecimal("-10.00"), USD);
+            assertEquals("USD -10.00", d.toString());
+        }
+    }
 }
