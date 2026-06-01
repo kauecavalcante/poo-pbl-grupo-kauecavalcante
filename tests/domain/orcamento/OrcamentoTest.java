@@ -2,12 +2,15 @@ package domain.orcamento;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.peca.PecaId;
 import domain.shared.Preco;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -281,6 +284,119 @@ class OrcamentoTest {
             o.removerItem(b);
             assertTrue(o.ehVazio());
             assertEquals(Preco.zero(), o.total());
+        }
+    }
+
+    @Nested
+    @DisplayName("Reconstituição a partir de identidade existente")
+    class Reconstituicao {
+
+        @Test
+        @DisplayName("reconstituir preserva ID e itens")
+        void reconstituirPreservaIdEItens() {
+            OrcamentoId id = OrcamentoId.novo();
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            Orcamento o = Orcamento.reconstituir(id, List.of(item));
+            assertEquals(id, o.id());
+            assertEquals(1, o.quantidadeDeItens());
+            assertEquals(item, o.itens().get(0));
+            assertEquals(Preco.deReais("80.00"), o.total());
+        }
+
+        @Test
+        @DisplayName("reconstituir aceita lista vazia")
+        void reconstituirComListaVazia() {
+            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), List.of());
+            assertTrue(o.ehVazio());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita ID nulo")
+        void reconstituirRejeitaIdNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Orcamento.reconstituir(null, List.of())
+            );
+            assertEquals("id do orçamento não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita lista nula")
+        void reconstituirRejeitaListaNula() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Orcamento.reconstituir(OrcamentoId.novo(), null)
+            );
+            assertEquals("lista de itens não pode ser nula", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita itens nulos dentro da lista")
+        void reconstituirRejeitaItensNulosNaLista() {
+            ItemDeOrcamento valido = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Orcamento.reconstituir(OrcamentoId.novo(), Arrays.asList(valido, null))
+            );
+            assertEquals("itens do orçamento não podem ser nulos", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir faz cópia defensiva — mutação posterior da lista não afeta o agregado")
+        void reconstituirFazCopiaDefensiva() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            List<ItemDeOrcamento> entrada = new ArrayList<>();
+            entrada.add(item);
+            Orcamento o = Orcamento.reconstituir(OrcamentoId.novo(), entrada);
+
+            entrada.clear();
+
+            assertEquals(1, o.quantidadeDeItens());
+        }
+    }
+
+    @Nested
+    @DisplayName("Igualdade por identidade")
+    class Igualdade {
+
+        @Test
+        @DisplayName("dois orçamentos com mesmo ID são iguais mesmo com itens divergentes")
+        void iguaisQuandoMesmoIdAindaQueItensDivirjam() {
+            OrcamentoId id = OrcamentoId.novo();
+            Orcamento a = Orcamento.reconstituir(id, List.of(
+                ItemDeOrcamento.deMaoDeObra("Troca A", Preco.deReais("10.00"), 1)
+            ));
+            Orcamento b = Orcamento.reconstituir(id, List.of(
+                ItemDeOrcamento.deMaoDeObra("Troca B", Preco.deReais("999.00"), 5)
+            ));
+            assertEquals(a, b);
+            assertEquals(a.hashCode(), b.hashCode());
+        }
+
+        @Test
+        @DisplayName("orçamentos com IDs diferentes não são iguais")
+        void distintosQuandoIdsDiferentes() {
+            assertNotEquals(Orcamento.novo(), Orcamento.novo());
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            assertFalse(Orcamento.novo().equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            Orcamento o = Orcamento.novo();
+            assertFalse(o.equals(o.id()));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            Orcamento o = Orcamento.novo();
+            assertTrue(o.equals(o));
         }
     }
 }

@@ -4,6 +4,7 @@ import domain.peca.PecaId;
 import domain.shared.Preco;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class Orcamento {
 
@@ -17,6 +18,21 @@ public final class Orcamento {
 
     public static Orcamento novo() {
         return new Orcamento(OrcamentoId.novo(), new ArrayList<>());
+    }
+
+    public static Orcamento reconstituir(OrcamentoId id, List<ItemDeOrcamento> itens) {
+        if (id == null) {
+            throw new IllegalArgumentException("id do orçamento não pode ser nulo");
+        }
+        if (itens == null) {
+            throw new IllegalArgumentException("lista de itens não pode ser nula");
+        }
+        for (ItemDeOrcamento item : itens) {
+            if (item == null) {
+                throw new IllegalArgumentException("itens do orçamento não podem ser nulos");
+            }
+        }
+        return new Orcamento(id, new ArrayList<>(itens));
     }
 
     public OrcamentoId id() {
@@ -79,5 +95,21 @@ public final class Orcamento {
             .filter(i -> i.id().equals(itemId))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("item não encontrado no orçamento"));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Orcamento outro)) {
+            return false;
+        }
+        return id.equals(outro.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
