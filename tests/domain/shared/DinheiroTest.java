@@ -279,4 +279,43 @@ class DinheiroTest {
             assertEquals("operação entre moedas distintas: BRL e USD", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Predicados de sinal")
+    class Predicados {
+
+        @Test
+        @DisplayName("zero é ehZero e nem positivo nem negativo")
+        void zeroReconhecidoComoZero() {
+            Dinheiro zero = Dinheiro.zeroReais();
+            assertTrue(zero.ehZero());
+            assertFalse(zero.ehPositivo());
+            assertFalse(zero.ehNegativo());
+        }
+
+        @Test
+        @DisplayName("valor positivo é ehPositivo e não é zero nem negativo")
+        void positivoReconhecidoComoPositivo() {
+            Dinheiro d = Dinheiro.deReais("1.00");
+            assertTrue(d.ehPositivo());
+            assertFalse(d.ehZero());
+            assertFalse(d.ehNegativo());
+        }
+
+        @Test
+        @DisplayName("valor negativo é ehNegativo e não é zero nem positivo")
+        void negativoReconhecidoComoNegativo() {
+            Dinheiro d = Dinheiro.deReais("-1.00");
+            assertTrue(d.ehNegativo());
+            assertFalse(d.ehZero());
+            assertFalse(d.ehPositivo());
+        }
+
+        @Test
+        @DisplayName("zero também é reconhecido quando construído explicitamente como 0,00")
+        void zeroExplicitoTambemEhZero() {
+            Dinheiro d = Dinheiro.deReais("0.00");
+            assertTrue(d.ehZero());
+        }
+    }
 }

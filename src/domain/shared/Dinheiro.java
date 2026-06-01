@@ -78,6 +78,18 @@ public final class Dinheiro {
         return multiplicar(BigDecimal.valueOf(fator));
     }
 
+    public boolean ehZero() {
+        return valor.signum() == 0;
+    }
+
+    public boolean ehPositivo() {
+        return valor.signum() > 0;
+    }
+
+    public boolean ehNegativo() {
+        return valor.signum() < 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
