@@ -278,4 +278,77 @@ class OrdemDeServicoTest {
             return os;
         }
     }
+
+    @Nested
+    @DisplayName("Conclusão e entrega")
+    class ConclusaoEEntrega {
+
+        @Test
+        @DisplayName("concluir a partir de EM_EXECUCAO transita para CONCLUIDA e grava dataConclusao")
+        void concluirTransitaEGravaData() {
+            OrdemDeServico os = emExecucao();
+            os.concluir();
+            assertEquals(StatusOS.CONCLUIDA, os.status());
+            assertEquals(Optional.of(LocalDate.now()), os.dataConclusao());
+        }
+
+        @Test
+        @DisplayName("entregar a partir de CONCLUIDA transita para ENTREGUE e grava dataEntrega")
+        void entregarTransitaEGravaData() {
+            OrdemDeServico os = emExecucao();
+            os.concluir();
+            os.entregar();
+            assertEquals(StatusOS.ENTREGUE, os.status());
+            assertEquals(Optional.of(LocalDate.now()), os.dataEntrega());
+        }
+
+        @Test
+        @DisplayName("concluir em RECEBIDA é bloqueado")
+        void concluirEmRecebidaBloqueado() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            assertThrows(IllegalStateException.class, os::concluir);
+        }
+
+        @Test
+        @DisplayName("entregar em EM_EXECUCAO é bloqueado (precisa passar por CONCLUIDA)")
+        void entregarEmExecucaoBloqueado() {
+            OrdemDeServico os = emExecucao();
+            assertThrows(IllegalStateException.class, os::entregar);
+        }
+
+        @Test
+        @DisplayName("concluir duas vezes é bloqueado")
+        void concluirDuasVezesBloqueado() {
+            OrdemDeServico os = emExecucao();
+            os.concluir();
+            assertThrows(IllegalStateException.class, os::concluir);
+        }
+
+        @Test
+        @DisplayName("entregar duas vezes é bloqueado (terminal)")
+        void entregarDuasVezesBloqueado() {
+            OrdemDeServico os = emExecucao();
+            os.concluir();
+            os.entregar();
+            assertThrows(IllegalStateException.class, os::entregar);
+        }
+
+        @Test
+        @DisplayName("dataConclusao continua presente após entregar")
+        void dataConclusaoPersisteAposEntregar() {
+            OrdemDeServico os = emExecucao();
+            os.concluir();
+            LocalDate conclusao = os.dataConclusao().orElseThrow();
+            os.entregar();
+            assertEquals(Optional.of(conclusao), os.dataConclusao());
+        }
+
+        private OrdemDeServico emExecucao() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            os.aprovar();
+            return os;
+        }
+    }
 }
