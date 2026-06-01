@@ -54,6 +54,22 @@ public final class Dinheiro {
         return moeda;
     }
 
+    public Dinheiro somar(Dinheiro outro) {
+        return new Dinheiro(this.valor.add(outro.valor), this.moeda);
+    }
+
+    public Dinheiro subtrair(Dinheiro outro) {
+        return new Dinheiro(this.valor.subtract(outro.valor), this.moeda);
+    }
+
+    public Dinheiro multiplicar(BigDecimal fator) {
+        return new Dinheiro(this.valor.multiply(fator), this.moeda);
+    }
+
+    public Dinheiro multiplicar(int fator) {
+        return multiplicar(BigDecimal.valueOf(fator));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

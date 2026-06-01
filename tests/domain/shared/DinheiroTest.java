@@ -167,4 +167,70 @@ class DinheiroTest {
             assertTrue(a.equals(a));
         }
     }
+
+    @Nested
+    @DisplayName("Operações aritméticas")
+    class Operacoes {
+
+        @Test
+        @DisplayName("somar dois valores positivos")
+        void somaDoisPositivos() {
+            Dinheiro resultado = Dinheiro.deReais("10.00").somar(Dinheiro.deReais("5.50"));
+            assertEquals(Dinheiro.deReais("15.50"), resultado);
+        }
+
+        @Test
+        @DisplayName("somar valores opostos resulta em zero")
+        void somaResultandoEmZero() {
+            Dinheiro resultado = Dinheiro.deReais("10.00").somar(Dinheiro.deReais("-10.00"));
+            assertEquals(Dinheiro.zeroReais(), resultado);
+        }
+
+        @Test
+        @DisplayName("subtrair valor maior produz resultado negativo")
+        void subtracaoComResultadoNegativo() {
+            Dinheiro resultado = Dinheiro.deReais("5.00").subtrair(Dinheiro.deReais("8.00"));
+            assertEquals(Dinheiro.deReais("-3.00"), resultado);
+        }
+
+        @Test
+        @DisplayName("multiplicar por BigDecimal fracionário")
+        void multiplicacaoPorBigDecimal() {
+            Dinheiro resultado = Dinheiro.deReais("10.00").multiplicar(new BigDecimal("1.5"));
+            assertEquals(Dinheiro.deReais("15.00"), resultado);
+        }
+
+        @Test
+        @DisplayName("multiplicar por inteiro")
+        void multiplicacaoPorInteiro() {
+            Dinheiro resultado = Dinheiro.deReais("7.50").multiplicar(3);
+            assertEquals(Dinheiro.deReais("22.50"), resultado);
+        }
+
+        @Test
+        @DisplayName("multiplicar por zero retorna zero")
+        void multiplicacaoPorZero() {
+            Dinheiro resultado = Dinheiro.deReais("123.45").multiplicar(0);
+            assertEquals(Dinheiro.zeroReais(), resultado);
+        }
+
+        @Test
+        @DisplayName("multiplicação aplica HALF_EVEN no resultado")
+        void multiplicacaoArredondaHalfEven() {
+            // 10.00 * 0.333 = 3.33000 → arredonda para 3.33
+            Dinheiro resultado = Dinheiro.deReais("10.00").multiplicar(new BigDecimal("0.333"));
+            assertEquals(Dinheiro.deReais("3.33"), resultado);
+        }
+
+        @Test
+        @DisplayName("operações não modificam o Dinheiro original")
+        void imutabilidade() {
+            Dinheiro original = Dinheiro.deReais("10.00");
+            original.somar(Dinheiro.deReais("5.00"));
+            original.subtrair(Dinheiro.deReais("2.00"));
+            original.multiplicar(7);
+            original.multiplicar(new BigDecimal("3.14"));
+            assertEquals(Dinheiro.deReais("10.00"), original);
+        }
+    }
 }
