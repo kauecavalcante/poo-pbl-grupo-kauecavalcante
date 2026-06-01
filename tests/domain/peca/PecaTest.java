@@ -488,4 +488,38 @@ class PecaTest {
             assertEquals(10, p.estoque());
         }
     }
+
+    @Nested
+    @DisplayName("Representação textual")
+    class Formatacao {
+
+        @Test
+        @DisplayName("toString contém o ID")
+        void toStringContemId() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.toString().contains(p.id().toString()));
+        }
+
+        @Test
+        @DisplayName("toString contém o código e a descrição")
+        void toStringContemCodigoEDescricao() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.toString().contains("FLT-1001"));
+            assertTrue(p.toString().contains("Filtro de óleo"));
+        }
+
+        @Test
+        @DisplayName("toString contém o preço formatado")
+        void toStringContemPreco() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.toString().contains(PRECO_PADRAO.toString()));
+        }
+
+        @Test
+        @DisplayName("toString contém o estoque")
+        void toStringContemEstoque() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.toString().contains("10"));
+        }
+    }
 }

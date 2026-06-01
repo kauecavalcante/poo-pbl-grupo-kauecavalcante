@@ -119,6 +119,15 @@ public final class Peca {
         return Objects.hash(id);
     }
 
+    @Override
+    public String toString() {
+        return "Peca{id=" + id
+            + ", codigo=" + codigo
+            + ", descricao=" + descricao
+            + ", preco=" + preco
+            + ", estoque=" + estoque + "}";
+    }
+
     private static String validarCodigo(String codigo) {
         if (codigo == null || codigo.trim().isEmpty()) {
             throw new IllegalArgumentException("código da peça não pode ser vazio");
