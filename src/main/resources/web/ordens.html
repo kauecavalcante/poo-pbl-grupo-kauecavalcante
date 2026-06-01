@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Ordens de Servico - Oficina Mecanica</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Oficina Mecanica</h1>
+        <nav>
+            <a href="/index.html">Inicio</a>
+            <a href="/clientes.html">Clientes</a>
+            <a href="/veiculos.html">Veiculos</a>
+            <a href="/pecas.html">Pecas</a>
+            <a href="/ordens.html">Ordens de Servico</a>
+        </nav>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Abrir Ordem de Servico</h2>
+            <form id="form-abrir">
+                <label>
+                    ID do cliente
+                    <input type="text" id="abrir-clienteId" placeholder="UUID do cliente" required>
+                </label>
+                <label>
+                    ID do veiculo
+                    <input type="text" id="abrir-veiculoId" placeholder="UUID do veiculo" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="primario">Abrir OS</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-abrir"></div>
+        </section>
+
+        <section class="card" id="painel-os" style="display:none">
+            <h2>Ordem de Servico Ativa</h2>
+            <div id="os-detalhes"></div>
+        </section>
+
+        <section class="card">
+            <h2>Buscar OS por ID</h2>
+            <form id="form-buscar">
+                <label>
+                    ID da ordem de servico
+                    <input type="text" id="busca-osId" placeholder="UUID da OS" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="secundario">Buscar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-busca"></div>
+        </section>
+    </main>
+    <script src="/static/app.js" defer></script>
+    <script defer>
+        let osAtual = null;
+
+        // ── abrir OS ────────────────────────────────────────────────────────
+        document.getElementById('form-abrir').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-abrir');
+            limpar(resultado);
+            try {
+                const dados = await api('POST', '/ordens', {
+                    clienteId: document.getElementById('abrir-clienteId').value.trim(),
+                    veiculoId: document.getElementById('abrir-veiculoId').value.trim()
+                });
+                exibirSucesso(resultado,
+                    `OS aberta com sucesso.<br>` +
+                    `<span class="dado"><strong>ID:</strong> <code>${dados.id}</code></span>`
+                );
+                e.target.reset();
+                await carregarOS(dados.id);
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+
+        // ── buscar OS ───────────────────────────────────────────────────────
+        document.getElementById('form-buscar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-busca');
+            limpar(resultado);
+            const id = document.getElementById('busca-osId').value.trim();
+            try {
+                await carregarOS(id);
+                exibirSucesso(resultado, 'OS carregada no painel acima.');
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+
+        // ── carregar e renderizar ───────────────────────────────────────────
+        async function carregarOS(id) {
+            const os = await api('GET', `/ordens/${id}`);
+            osAtual = os;
+            renderizarOS(os);
+        }
+
+        function renderizarOS(os) {
+            const painel = document.getElementById('painel-os');
+            const detalhes = document.getElementById('os-detalhes');
+            painel.style.display = '';
+
+            let html =
+                `<div class="dado"><strong>ID:</strong> <code>${os.id}</code></div>` +
+                `<div class="dado"><strong>Status:</strong> <strong>${os.status}</strong></div>` +
+                `<div class="dado"><strong>Cliente ID:</strong> <code>${os.clienteId}</code></div>` +
+                `<div class="dado"><strong>Veiculo ID:</strong> <code>${os.veiculoId}</code></div>` +
+                `<div class="dado"><strong>Abertura:</strong> ${os.dataAbertura || '-'}</div>`;
+
+            if (os.diagnostico) {
+                html += `<div class="dado"><strong>Diagnostico:</strong> ${os.diagnostico}</div>`;
+            }
+            if (os.orcamentoId) {
+                html += `<div class="dado"><strong>Orcamento ID:</strong> <code>${os.orcamentoId}</code></div>`;
+            }
+            if (os.dataConclusao) {
+                html += `<div class="dado"><strong>Conclusao:</strong> ${os.dataConclusao}</div>`;
+            }
+            if (os.dataEntrega) {
+                html += `<div class="dado"><strong>Entrega:</strong> ${os.dataEntrega}</div>`;
+            }
+            if (os.motivoRejeicao) {
+                html += `<div class="dado"><strong>Motivo rejeicao:</strong> ${os.motivoRejeicao}</div>`;
+            }
+            if (os.motivoCancelamento) {
+                html += `<div class="dado"><strong>Motivo cancelamento:</strong> ${os.motivoCancelamento}</div>`;
+            }
+
+            html += `<hr class="separador">`;
+            html += acoesPorEstado(os);
+            html += `<div class="resultado" id="resultado-acao"></div>`;
+
+            detalhes.innerHTML = html;
+            registrarAcoes(os);
+        }
+
+        function acoesPorEstado(os) {
+            switch (os.status) {
+                case 'RECEBIDA':
+                    return formDiagnostico() + formOrcamento() + botoesCancelar();
+                case 'AGUARDANDO_APROVACAO':
+                    return botoesAprovacao() + botoesCancelar();
+                case 'EM_EXECUCAO':
+                    return `<div class="acoes"><button id="btn-concluir" class="primario">Concluir servico</button></div>` + botoesCancelar();
+                case 'CONCLUIDA':
+                    return `<div class="acoes"><button id="btn-entregar" class="primario">Entregar veiculo</button></div>` + botoesCancelar();
+                case 'ENTREGUE':
+                    return `<div class="info">Ordem finalizada com entrega em ${os.dataEntrega}.</div>`;
+                case 'REJEITADA':
+                    return `<div class="erro">Orcamento rejeitado. Motivo: ${os.motivoRejeicao || '-'}</div>`;
+                case 'CANCELADA':
+                    return `<div class="erro">OS cancelada. Motivo: ${os.motivoCancelamento || '-'}</div>`;
+                default:
+                    return '';
+            }
+        }
+
+        function formDiagnostico() {
+            return `
+            <details open>
+                <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Registrar diagnostico</summary>
+                <form id="form-diagnostico" style="margin-top:0.5rem">
+                    <label>
+                        Descricao do diagnostico
+                        <input type="text" id="diag-texto" placeholder="Descreva o problema identificado" required>
+                    </label>
+                    <div class="acoes"><button type="submit" class="primario">Salvar diagnostico</button></div>
+                </form>
+            </details>
+            <hr class="separador">`;
+        }
+
+        function formOrcamento() {
+            return `
+            <details open>
+                <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Montar orcamento</summary>
+                <div style="margin-top:0.5rem">
+                    <p style="margin:0 0 0.5rem;font-size:0.9rem;color:#555">Pecas do catalogo</p>
+                    <div id="lista-pecas"></div>
+                    <button type="button" id="btn-add-peca" class="secundario" style="margin-bottom:0.75rem">+ Adicionar peca</button>
+
+                    <p style="margin:0 0 0.5rem;font-size:0.9rem;color:#555">Servicos de mao de obra</p>
+                    <div id="lista-maos"></div>
+                    <button type="button" id="btn-add-mao" class="secundario" style="margin-bottom:0.75rem">+ Adicionar servico</button>
+
+                    <div class="acoes">
+                        <button type="button" id="btn-enviar-orcamento" class="primario">Enviar orcamento</button>
+                    </div>
+                </div>
+            </details>
+            <hr class="separador">`;
+        }
+
+        function botoesAprovacao() {
+            return `
+            <div class="acoes">
+                <button id="btn-aprovar" class="primario">Aprovar orcamento</button>
+                <button id="btn-abrir-rejeitar" class="perigo">Rejeitar orcamento</button>
+            </div>
+            <div id="form-rejeitar-container" style="display:none;margin-top:0.75rem">
+                <label style="font-size:0.9rem;font-weight:500;color:#333">
+                    Motivo da rejeicao
+                    <input type="text" id="motivo-rejeicao" placeholder="Informe o motivo">
+                </label>
+                <div class="acoes" style="margin-top:0.4rem">
+                    <button id="btn-confirmar-rejeitar" class="perigo">Confirmar rejeicao</button>
+                    <button id="btn-cancelar-rejeitar" class="secundario">Cancelar</button>
+                </div>
+            </div>
+            <hr class="separador">`;
+        }
+
+        function botoesCancelar() {
+            return `
+            <div class="acoes" style="margin-top:0.25rem">
+                <button id="btn-abrir-cancelar" class="perigo">Cancelar OS</button>
+            </div>
+            <div id="form-cancelar-container" style="display:none;margin-top:0.75rem">
+                <label style="font-size:0.9rem;font-weight:500;color:#333">
+                    Motivo do cancelamento
+                    <input type="text" id="motivo-cancelamento" placeholder="Informe o motivo">
+                </label>
+                <div class="acoes" style="margin-top:0.4rem">
+                    <button id="btn-confirmar-cancelar" class="perigo">Confirmar cancelamento</button>
+                    <button id="btn-desistir-cancelar" class="secundario">Voltar</button>
+                </div>
+            </div>`;
+        }
+
+        // ── registrar eventos após renderização ─────────────────────────────
+        function registrarAcoes(os) {
+            const acao = () => document.getElementById('resultado-acao');
+
+            // diagnostico
+            const fDiag = document.getElementById('form-diagnostico');
+            if (fDiag) {
+                fDiag.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    limpar(acao());
+                    try {
+                        await api('POST', `/ordens/${os.id}/diagnostico`, {
+                            diagnostico: document.getElementById('diag-texto').value.trim()
+                        });
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+
+            // orcamento — adicionar peca
+            const btnAddPeca = document.getElementById('btn-add-peca');
+            if (btnAddPeca) {
+                btnAddPeca.addEventListener('click', function () {
+                    const lista = document.getElementById('lista-pecas');
+                    const div = document.createElement('div');
+                    div.className = 'grupo-item';
+                    div.innerHTML = `
+                        <label>ID da peca <input type="text" class="peca-id" placeholder="UUID da peca"></label>
+                        <label>Quantidade <input type="number" class="peca-qtd" value="1" min="1"></label>
+                        <button type="button" class="secundario remover" onclick="this.parentElement.remove()">Remover</button>`;
+                    lista.appendChild(div);
+                });
+            }
+
+            // orcamento — adicionar mao de obra
+            const btnAddMao = document.getElementById('btn-add-mao');
+            if (btnAddMao) {
+                btnAddMao.addEventListener('click', function () {
+                    const lista = document.getElementById('lista-maos');
+                    const div = document.createElement('div');
+                    div.className = 'grupo-item';
+                    div.innerHTML = `
+                        <label>Descricao <input type="text" class="mao-desc" placeholder="Ex: Troca de oleo"></label>
+                        <label>Preco (R$) <input type="text" class="mao-preco" placeholder="120.00"></label>
+                        <label>Quantidade <input type="number" class="mao-qtd" value="1" min="1"></label>
+                        <button type="button" class="secundario remover" onclick="this.parentElement.remove()">Remover</button>`;
+                    lista.appendChild(div);
+                });
+            }
+
+            // orcamento — enviar
+            const btnOrc = document.getElementById('btn-enviar-orcamento');
+            if (btnOrc) {
+                btnOrc.addEventListener('click', async function () {
+                    limpar(acao());
+                    const pecas = Array.from(document.querySelectorAll('#lista-pecas .grupo-item')).map(el => ({
+                        pecaId: el.querySelector('.peca-id').value.trim(),
+                        quantidade: parseInt(el.querySelector('.peca-qtd').value, 10)
+                    })).filter(p => p.pecaId);
+
+                    const maosDeObra = Array.from(document.querySelectorAll('#lista-maos .grupo-item')).map(el => ({
+                        descricao: el.querySelector('.mao-desc').value.trim(),
+                        precoReais: el.querySelector('.mao-preco').value.trim(),
+                        quantidade: parseInt(el.querySelector('.mao-qtd').value, 10)
+                    })).filter(m => m.descricao);
+
+                    try {
+                        await api('POST', `/ordens/${os.id}/orcamento`, { pecas, maosDeObra });
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+
+            // aprovar
+            const btnAprovar = document.getElementById('btn-aprovar');
+            if (btnAprovar) {
+                btnAprovar.addEventListener('click', async function () {
+                    limpar(acao());
+                    try {
+                        await api('POST', `/ordens/${os.id}/aprovar`, null);
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+
+            // rejeitar — toggle form
+            const btnAbrirRej = document.getElementById('btn-abrir-rejeitar');
+            if (btnAbrirRej) {
+                btnAbrirRej.addEventListener('click', function () {
+                    document.getElementById('form-rejeitar-container').style.display = '';
+                });
+                document.getElementById('btn-cancelar-rejeitar').addEventListener('click', function () {
+                    document.getElementById('form-rejeitar-container').style.display = 'none';
+                });
+                document.getElementById('btn-confirmar-rejeitar').addEventListener('click', async function () {
+                    limpar(acao());
+                    const motivo = document.getElementById('motivo-rejeicao').value.trim();
+                    try {
+                        await api('POST', `/ordens/${os.id}/rejeitar`, { motivo });
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+
+            // concluir
+            const btnConcluir = document.getElementById('btn-concluir');
+            if (btnConcluir) {
+                btnConcluir.addEventListener('click', async function () {
+                    limpar(acao());
+                    try {
+                        await api('POST', `/ordens/${os.id}/concluir`, null);
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+
+            // entregar
+            const btnEntregar = document.getElementById('btn-entregar');
+            if (btnEntregar) {
+                btnEntregar.addEventListener('click', async function () {
+                    limpar(acao());
+                    try {
+                        await api('POST', `/ordens/${os.id}/entregar`, null);
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+
+            // cancelar — toggle form
+            const btnAbrirCanc = document.getElementById('btn-abrir-cancelar');
+            if (btnAbrirCanc) {
+                btnAbrirCanc.addEventListener('click', function () {
+                    document.getElementById('form-cancelar-container').style.display = '';
+                });
+                document.getElementById('btn-desistir-cancelar').addEventListener('click', function () {
+                    document.getElementById('form-cancelar-container').style.display = 'none';
+                });
+                document.getElementById('btn-confirmar-cancelar').addEventListener('click', async function () {
+                    limpar(acao());
+                    const motivo = document.getElementById('motivo-cancelamento').value.trim();
+                    try {
+                        await api('POST', `/ordens/${os.id}/cancelar`, { motivo });
+                        await carregarOS(os.id);
+                    } catch (err) { exibirErro(acao(), err); }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
