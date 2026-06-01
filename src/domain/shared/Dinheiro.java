@@ -3,6 +3,7 @@ package domain.shared;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Currency;
+import java.util.Objects;
 
 public final class Dinheiro {
 
@@ -51,5 +52,21 @@ public final class Dinheiro {
 
     public Currency moeda() {
         return moeda;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Dinheiro outro)) {
+            return false;
+        }
+        return valor.equals(outro.valor) && moeda.equals(outro.moeda);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(valor, moeda);
     }
 }

@@ -1,7 +1,10 @@
 package domain.shared;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.Currency;
@@ -102,6 +105,66 @@ class DinheiroTest {
                 () -> Dinheiro.de(new BigDecimal("1.00"), null)
             );
             assertEquals("moeda não pode ser nula", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Igualdade")
+    class Igualdade {
+
+        @Test
+        @DisplayName("dois Dinheiros com mesmo valor e mesma moeda são iguais")
+        void iguaisQuandoMesmoValorEMoeda() {
+            Dinheiro a = Dinheiro.deReais("10.00");
+            Dinheiro b = Dinheiro.deReais("10.00");
+            assertEquals(a, b);
+            assertEquals(a.hashCode(), b.hashCode());
+        }
+
+        @Test
+        @DisplayName("escalas diferentes na entrada não afetam igualdade após normalização")
+        void igualdadeAposNormalizacaoDeEscala() {
+            Dinheiro a = Dinheiro.deReais("10");
+            Dinheiro b = Dinheiro.deReais("10.00");
+            assertEquals(a, b);
+            assertEquals(a.hashCode(), b.hashCode());
+        }
+
+        @Test
+        @DisplayName("valores diferentes tornam os Dinheiros distintos")
+        void distintosQuandoValoresDiferentes() {
+            Dinheiro a = Dinheiro.deReais("10.00");
+            Dinheiro b = Dinheiro.deReais("10.01");
+            assertNotEquals(a, b);
+        }
+
+        @Test
+        @DisplayName("moedas diferentes tornam os Dinheiros distintos")
+        void distintosQuandoMoedasDiferentes() {
+            Dinheiro a = Dinheiro.de(new BigDecimal("10.00"), BRL);
+            Dinheiro b = Dinheiro.de(new BigDecimal("10.00"), USD);
+            assertNotEquals(a, b);
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            Dinheiro a = Dinheiro.deReais("10.00");
+            assertFalse(a.equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            Dinheiro a = Dinheiro.deReais("10.00");
+            assertFalse(a.equals("10.00"));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            Dinheiro a = Dinheiro.deReais("10.00");
+            assertTrue(a.equals(a));
         }
     }
 }
