@@ -101,6 +101,18 @@ public final class Orcamento {
         encontrar(itemId).atualizarQuantidade(novaQuantidade);
     }
 
+    public void enviar() {
+        this.estado = this.estado.aoEnviar(itens.size());
+    }
+
+    public void aprovar() {
+        this.estado = this.estado.aoAprovar();
+    }
+
+    public void rejeitar(String motivo) {
+        this.estado = this.estado.aoRejeitar(motivo);
+    }
+
     private ItemDeOrcamento encontrar(ItemDeOrcamentoId itemId) {
         return itens.stream()
             .filter(i -> i.id().equals(itemId))

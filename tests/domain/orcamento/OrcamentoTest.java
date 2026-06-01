@@ -414,6 +414,121 @@ class OrcamentoTest {
     }
 
     @Nested
+    @DisplayName("Transições de estado")
+    class Transicoes {
+
+        @Test
+        @DisplayName("fluxo feliz: novo → adicionar item → enviar → aprovar")
+        void fluxoFelizCompleto() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.enviar();
+            assertEquals(StatusOrcamento.ENVIADO, o.status());
+            o.aprovar();
+            assertEquals(StatusOrcamento.APROVADO, o.status());
+        }
+
+        @Test
+        @DisplayName("fluxo de rejeição: enviar → rejeitar com motivo")
+        void fluxoRejeicao() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.enviar();
+            o.rejeitar("Cliente desistiu da compra");
+            assertEquals(StatusOrcamento.REJEITADO, o.status());
+            assertEquals(Optional.of("Cliente desistiu da compra"), o.motivoRejeicao());
+        }
+
+        @Test
+        @DisplayName("enviar de orçamento vazio é bloqueado")
+        void enviarVazioBloqueado() {
+            Orcamento o = Orcamento.novo();
+            IllegalStateException ex = assertThrows(IllegalStateException.class, o::enviar);
+            assertEquals("orçamento sem itens não pode ser enviado", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("aprovar em rascunho é bloqueado")
+        void aprovarEmRascunhoBloqueado() {
+            Orcamento o = Orcamento.novo();
+            IllegalStateException ex = assertThrows(IllegalStateException.class, o::aprovar);
+            assertEquals("orçamento em rascunho não pode ser aprovado", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("rejeitar em rascunho é bloqueado")
+        void rejeitarEmRascunhoBloqueado() {
+            Orcamento o = Orcamento.novo();
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.rejeitar("motivo qualquer")
+            );
+            assertEquals("orçamento em rascunho não pode ser rejeitado", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reenviar é bloqueado em Enviado")
+        void reenviarBloqueado() {
+            Orcamento o = orcamentoEnviado();
+            assertThrows(IllegalStateException.class, o::enviar);
+        }
+
+        @Test
+        @DisplayName("aprovar duas vezes é bloqueado")
+        void aprovarDuasVezesBloqueado() {
+            Orcamento o = orcamentoEnviado();
+            o.aprovar();
+            assertThrows(IllegalStateException.class, o::aprovar);
+        }
+
+        @Test
+        @DisplayName("rejeitar após aprovar é bloqueado")
+        void rejeitarAposAprovarBloqueado() {
+            Orcamento o = orcamentoEnviado();
+            o.aprovar();
+            assertThrows(IllegalStateException.class, () -> o.rejeitar("motivo"));
+        }
+
+        @Test
+        @DisplayName("aprovar após rejeitar é bloqueado")
+        void aprovarAposRejeitarBloqueado() {
+            Orcamento o = orcamentoEnviado();
+            o.rejeitar("Cliente desistiu");
+            assertThrows(IllegalStateException.class, o::aprovar);
+        }
+
+        @Test
+        @DisplayName("rejeitar com motivo nulo lança IllegalArgumentException")
+        void rejeitarComMotivoNulo() {
+            Orcamento o = orcamentoEnviado();
+            assertThrows(IllegalArgumentException.class, () -> o.rejeitar(null));
+        }
+
+        @Test
+        @DisplayName("rejeitar com motivo curto lança IllegalArgumentException")
+        void rejeitarComMotivoCurto() {
+            Orcamento o = orcamentoEnviado();
+            assertThrows(IllegalArgumentException.class, () -> o.rejeitar("AB"));
+        }
+
+        @Test
+        @DisplayName("motivoRejeicao permanece Optional.empty fora de Rejeitado")
+        void motivoRejeicaoVazioForaDeRejeitado() {
+            Orcamento o = orcamentoEnviado();
+            assertEquals(Optional.empty(), o.motivoRejeicao());
+            o.aprovar();
+            assertEquals(Optional.empty(), o.motivoRejeicao());
+        }
+
+        private Orcamento orcamentoEnviado() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.enviar();
+            return o;
+        }
+    }
+
+    @Nested
     @DisplayName("Representação textual")
     class Formatacao {
 
