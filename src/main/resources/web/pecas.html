@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Pecas - Oficina Mecanica</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Oficina Mecanica</h1>
+        <nav>
+            <a href="/index.html">Inicio</a>
+            <a href="/clientes.html">Clientes</a>
+            <a href="/veiculos.html">Veiculos</a>
+            <a href="/pecas.html">Pecas</a>
+            <a href="/ordens.html">Ordens de Servico</a>
+        </nav>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Cadastrar Peca</h2>
+            <form id="form-cadastrar">
+                <label>
+                    Codigo
+                    <input type="text" id="codigo" placeholder="FLT-001" required>
+                </label>
+                <label>
+                    Descricao
+                    <input type="text" id="descricao" placeholder="Filtro de oleo" required>
+                </label>
+                <label>
+                    Preco (R$)
+                    <input type="text" id="preco" placeholder="49.90" required>
+                </label>
+                <label>
+                    Estoque inicial
+                    <input type="number" id="estoque" placeholder="10" min="0" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="primario">Cadastrar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-cadastro"></div>
+        </section>
+
+        <section class="card">
+            <h2>Buscar Peca por ID</h2>
+            <form id="form-buscar">
+                <label>
+                    ID da peca
+                    <input type="text" id="busca-id" placeholder="UUID da peca" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="secundario">Buscar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-busca"></div>
+        </section>
+    </main>
+    <script src="/static/app.js" defer></script>
+    <script defer>
+        document.getElementById('form-cadastrar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-cadastro');
+            limpar(resultado);
+            try {
+                const dados = await api('POST', '/pecas', {
+                    codigo: document.getElementById('codigo').value.trim(),
+                    descricao: document.getElementById('descricao').value.trim(),
+                    precoReais: document.getElementById('preco').value.trim(),
+                    estoqueInicial: parseInt(document.getElementById('estoque').value, 10)
+                });
+                exibirSucesso(resultado,
+                    `Peca cadastrada com sucesso.<br>` +
+                    `<span class="dado"><strong>ID:</strong> <code>${dados.id}</code></span>`
+                );
+                e.target.reset();
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+
+        document.getElementById('form-buscar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-busca');
+            limpar(resultado);
+            const id = document.getElementById('busca-id').value.trim();
+            try {
+                const p = await api('GET', `/pecas/${id}`);
+                resultado.innerHTML =
+                    `<div class="sucesso">` +
+                    `<div class="dado"><strong>ID:</strong> <code>${p.id}</code></div>` +
+                    `<div class="dado"><strong>Codigo:</strong> ${p.codigo}</div>` +
+                    `<div class="dado"><strong>Descricao:</strong> ${p.descricao}</div>` +
+                    `<div class="dado"><strong>Preco:</strong> R$ ${p.precoReais}</div>` +
+                    `<div class="dado"><strong>Estoque:</strong> ${p.estoque} unidades</div>` +
+                    `</div>`;
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+    </script>
+</body>
+</html>

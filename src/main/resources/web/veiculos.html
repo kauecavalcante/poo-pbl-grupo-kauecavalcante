@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Veiculos - Oficina Mecanica</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Oficina Mecanica</h1>
+        <nav>
+            <a href="/index.html">Inicio</a>
+            <a href="/clientes.html">Clientes</a>
+            <a href="/veiculos.html">Veiculos</a>
+            <a href="/pecas.html">Pecas</a>
+            <a href="/ordens.html">Ordens de Servico</a>
+        </nav>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Cadastrar Veiculo</h2>
+            <form id="form-cadastrar">
+                <label>
+                    Placa
+                    <input type="text" id="placa" placeholder="ABC1234 ou ABC1D23" required>
+                </label>
+                <label>
+                    Marca
+                    <input type="text" id="marca" placeholder="Fiat" required>
+                </label>
+                <label>
+                    Modelo
+                    <input type="text" id="modelo" placeholder="Uno" required>
+                </label>
+                <label>
+                    Ano
+                    <input type="number" id="ano" placeholder="2010" min="1900" max="2027" required>
+                </label>
+                <label>
+                    ID do proprietario
+                    <input type="text" id="donoId" placeholder="UUID do cliente" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="primario">Cadastrar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-cadastro"></div>
+        </section>
+
+        <section class="card">
+            <h2>Buscar Veiculo por ID</h2>
+            <form id="form-buscar">
+                <label>
+                    ID do veiculo
+                    <input type="text" id="busca-id" placeholder="UUID do veiculo" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="secundario">Buscar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-busca"></div>
+        </section>
+    </main>
+    <script src="/static/app.js" defer></script>
+    <script defer>
+        document.getElementById('form-cadastrar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-cadastro');
+            limpar(resultado);
+            try {
+                const dados = await api('POST', '/veiculos', {
+                    placa: document.getElementById('placa').value.trim().toUpperCase(),
+                    marca: document.getElementById('marca').value.trim(),
+                    modelo: document.getElementById('modelo').value.trim(),
+                    ano: parseInt(document.getElementById('ano').value, 10),
+                    donoId: document.getElementById('donoId').value.trim()
+                });
+                exibirSucesso(resultado,
+                    `Veiculo cadastrado com sucesso.<br>` +
+                    `<span class="dado"><strong>ID:</strong> <code>${dados.id}</code></span>`
+                );
+                e.target.reset();
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+
+        document.getElementById('form-buscar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-busca');
+            limpar(resultado);
+            const id = document.getElementById('busca-id').value.trim();
+            try {
+                const v = await api('GET', `/veiculos/${id}`);
+                resultado.innerHTML =
+                    `<div class="sucesso">` +
+                    `<div class="dado"><strong>ID:</strong> <code>${v.id}</code></div>` +
+                    `<div class="dado"><strong>Placa:</strong> ${v.placa}</div>` +
+                    `<div class="dado"><strong>Marca:</strong> ${v.marca}</div>` +
+                    `<div class="dado"><strong>Modelo:</strong> ${v.modelo}</div>` +
+                    `<div class="dado"><strong>Ano:</strong> ${v.ano}</div>` +
+                    `<div class="dado"><strong>Proprietario ID:</strong> <code>${v.donoId}</code></div>` +
+                    `</div>`;
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+    </script>
+</body>
+</html>

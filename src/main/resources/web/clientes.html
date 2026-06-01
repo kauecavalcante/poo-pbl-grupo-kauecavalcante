@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Clientes - Oficina Mecanica</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Oficina Mecanica</h1>
+        <nav>
+            <a href="/index.html">Inicio</a>
+            <a href="/clientes.html">Clientes</a>
+            <a href="/veiculos.html">Veiculos</a>
+            <a href="/pecas.html">Pecas</a>
+            <a href="/ordens.html">Ordens de Servico</a>
+        </nav>
+    </header>
+    <main>
+        <section class="card">
+            <h2>Cadastrar Cliente</h2>
+            <form id="form-cadastrar">
+                <label>
+                    Nome
+                    <input type="text" id="nome" placeholder="Nome completo" required>
+                </label>
+                <label>
+                    CPF
+                    <input type="text" id="cpf" placeholder="000.000.000-00" required>
+                </label>
+                <label>
+                    Telefone
+                    <input type="text" id="telefone" placeholder="11912345678" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="primario">Cadastrar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-cadastro"></div>
+        </section>
+
+        <section class="card">
+            <h2>Buscar Cliente por ID</h2>
+            <form id="form-buscar">
+                <label>
+                    ID do cliente
+                    <input type="text" id="busca-id" placeholder="UUID do cliente" required>
+                </label>
+                <div class="acoes">
+                    <button type="submit" class="secundario">Buscar</button>
+                </div>
+            </form>
+            <div class="resultado" id="resultado-busca"></div>
+        </section>
+    </main>
+    <script src="/static/app.js" defer></script>
+    <script defer>
+        document.getElementById('form-cadastrar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-cadastro');
+            limpar(resultado);
+            try {
+                const dados = await api('POST', '/clientes', {
+                    nome: document.getElementById('nome').value.trim(),
+                    cpf: document.getElementById('cpf').value.trim(),
+                    telefone: document.getElementById('telefone').value.trim()
+                });
+                exibirSucesso(resultado,
+                    `Cliente cadastrado com sucesso.<br>` +
+                    `<span class="dado"><strong>ID:</strong> <code>${dados.id}</code></span>`
+                );
+                e.target.reset();
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+
+        document.getElementById('form-buscar').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const resultado = document.getElementById('resultado-busca');
+            limpar(resultado);
+            const id = document.getElementById('busca-id').value.trim();
+            try {
+                const c = await api('GET', `/clientes/${id}`);
+                resultado.innerHTML =
+                    `<div class="sucesso">` +
+                    `<div class="dado"><strong>ID:</strong> <code>${c.id}</code></div>` +
+                    `<div class="dado"><strong>Nome:</strong> ${c.nome}</div>` +
+                    `<div class="dado"><strong>CPF:</strong> ${c.cpf}</div>` +
+                    `<div class="dado"><strong>Telefone:</strong> ${c.telefone}</div>` +
+                    `</div>`;
+            } catch (erro) {
+                exibirErro(resultado, erro);
+            }
+        });
+    </script>
+</body>
+</html>
