@@ -2,6 +2,7 @@ package domain.orcamento;
 
 import domain.peca.PecaId;
 import domain.shared.Preco;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class ItemDeOrcamento {
@@ -48,6 +49,30 @@ public final class ItemDeOrcamento {
         );
     }
 
+    public static ItemDeOrcamento reconstituir(ItemDeOrcamentoId id, TipoItem tipo, PecaId pecaId,
+                                               String descricao, Preco precoUnitario, int quantidade) {
+        if (id == null) {
+            throw new IllegalArgumentException("id do item de orçamento não pode ser nulo");
+        }
+        if (tipo == null) {
+            throw new IllegalArgumentException("tipo do item não pode ser nulo");
+        }
+        if (tipo == TipoItem.PECA && pecaId == null) {
+            throw new IllegalArgumentException("item de peça exige pecaId");
+        }
+        if (tipo == TipoItem.MAO_DE_OBRA && pecaId != null) {
+            throw new IllegalArgumentException("item de mão de obra não deve ter pecaId");
+        }
+        return new ItemDeOrcamento(
+            id,
+            tipo,
+            pecaId,
+            validarDescricao(descricao),
+            exigirPrecoNaoNulo(precoUnitario),
+            validarQuantidade(quantidade)
+        );
+    }
+
     public ItemDeOrcamentoId id() {
         return id;
     }
@@ -86,6 +111,30 @@ public final class ItemDeOrcamento {
 
     public void atualizarQuantidade(int novaQuantidade) {
         this.quantidade = validarQuantidade(novaQuantidade);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ItemDeOrcamento outro)) {
+            return false;
+        }
+        return id.equals(outro.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "ItemDeOrcamento{tipo=" + tipo
+            + ", descricao=" + descricao
+            + ", quantidade=" + quantidade
+            + ", subtotal=" + subtotal() + "}";
     }
 
     private static String validarDescricao(String descricao) {
