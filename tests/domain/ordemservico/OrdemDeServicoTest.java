@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import domain.cliente.ClienteId;
+import domain.orcamento.OrcamentoId;
 import domain.veiculo.VeiculoId;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -17,6 +18,9 @@ class OrdemDeServicoTest {
 
     private static final ClienteId CLIENTE_ID = ClienteId.novo();
     private static final VeiculoId VEICULO_ID = VeiculoId.novo();
+    private static final OrcamentoId ORCAMENTO_ID = OrcamentoId.novo();
+    private static final String DIAGNOSTICO = "Suspensão dianteira com folga";
+    private static final String MOTIVO = "Cliente desistiu";
 
     @Nested
     @DisplayName("Abertura de OS")
@@ -140,6 +144,70 @@ class OrdemDeServicoTest {
             os.registrarDiagnostico("Suspensão com folga");
             assertThrows(IllegalArgumentException.class, () -> os.registrarDiagnostico(""));
             assertEquals(Optional.of("Suspensão com folga"), os.diagnostico());
+        }
+    }
+
+    @Nested
+    @DisplayName("Anexação de orçamento")
+    class AnexacaoDeOrcamento {
+
+        @Test
+        @DisplayName("anexarOrcamento exige diagnóstico previamente registrado")
+        void anexarSemDiagnostico() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> os.anexarOrcamento(ORCAMENTO_ID)
+            );
+            assertEquals("diagnóstico precisa estar registrado antes de anexar orçamento", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("anexarOrcamento após diagnóstico armazena o ID e transita para AGUARDANDO_APROVACAO")
+        void anexarComDiagnosticoTransita() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            assertEquals(Optional.of(ORCAMENTO_ID), os.orcamentoId());
+            assertEquals(StatusOS.AGUARDANDO_APROVACAO, os.status());
+        }
+
+        @Test
+        @DisplayName("anexarOrcamento rejeita orcamentoId nulo")
+        void anexarRejeitaOrcamentoIdNulo() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> os.anexarOrcamento(null)
+            );
+            assertEquals("orcamentoId não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("anexarOrcamento bloqueado em estados diferentes de RECEBIDA")
+        void anexarBloqueadoForaDeRecebida() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> os.anexarOrcamento(OrcamentoId.novo())
+            );
+            assertEquals("orçamento só pode ser anexado em OS no estado RECEBIDA", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("após anexar, registrarDiagnostico fica bloqueado")
+        void registrarDiagnosticoBloqueadoAposAnexar() {
+            OrdemDeServico os = OrdemDeServico.abrir(CLIENTE_ID, VEICULO_ID);
+            os.registrarDiagnostico(DIAGNOSTICO);
+            os.anexarOrcamento(ORCAMENTO_ID);
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> os.registrarDiagnostico("Novo diagnóstico")
+            );
+            assertEquals("diagnóstico só pode ser registrado em OS no estado RECEBIDA", ex.getMessage());
         }
     }
 }

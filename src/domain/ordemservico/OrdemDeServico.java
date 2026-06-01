@@ -107,6 +107,20 @@ public final class OrdemDeServico {
         this.diagnostico = validarDiagnostico(diagnostico);
     }
 
+    public void anexarOrcamento(OrcamentoId orcamentoId) {
+        if (status() != StatusOS.RECEBIDA) {
+            throw new IllegalStateException("orçamento só pode ser anexado em OS no estado RECEBIDA");
+        }
+        if (orcamentoId == null) {
+            throw new IllegalArgumentException("orcamentoId não pode ser nulo");
+        }
+        if (this.diagnostico == null) {
+            throw new IllegalStateException("diagnóstico precisa estar registrado antes de anexar orçamento");
+        }
+        this.orcamentoId = orcamentoId;
+        this.estado = this.estado.aoEnviarParaAprovacao();
+    }
+
     private static String validarDiagnostico(String diagnostico) {
         if (diagnostico == null || diagnostico.trim().isEmpty()) {
             throw new IllegalArgumentException("diagnóstico não pode ser vazio");
