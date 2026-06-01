@@ -687,5 +687,23 @@ class OrcamentoTest {
             o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
             assertTrue(o.toString().contains(o.total().toString()));
         }
+
+        @Test
+        @DisplayName("toString contém o status atual")
+        void toStringContemStatus() {
+            Orcamento o = Orcamento.novo();
+            assertTrue(o.toString().contains("RASCUNHO"));
+        }
+
+        @Test
+        @DisplayName("toString reflete a transição de estado")
+        void toStringReflexaTransicao() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            o.enviar();
+            assertTrue(o.toString().contains("ENVIADO"));
+            o.aprovar();
+            assertTrue(o.toString().contains("APROVADO"));
+        }
     }
 }

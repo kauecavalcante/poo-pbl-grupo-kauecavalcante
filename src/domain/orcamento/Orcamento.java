@@ -153,6 +153,7 @@ public final class Orcamento {
     @Override
     public String toString() {
         return "Orcamento{id=" + id
+            + ", status=" + estado.status()
             + ", itens=" + itens.size()
             + ", total=" + total() + "}";
     }
