@@ -1,6 +1,10 @@
 package domain.ordemservico;
 
-public interface EstadoOS {
+// sealed + permits: fixa o conjunto fechado dos 7 estados da OS. Pattern
+// matching exaustivo passa a ser verificado pelo compilador, e nenhum
+// estado externo pode contaminar a máquina de estados.
+public sealed interface EstadoOS
+    permits Recebida, AguardandoAprovacao, EmExecucao, Concluida, Entregue, Rejeitada, Cancelada {
 
     StatusOS status();
 
