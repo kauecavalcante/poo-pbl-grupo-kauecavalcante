@@ -365,4 +365,63 @@ class VeiculoTest {
             assertEquals(2010, v.ano());
         }
     }
+
+    @Nested
+    @DisplayName("Transferência de propriedade")
+    class Transferencia {
+
+        @Test
+        @DisplayName("transferirPara substitui o dono preservando ID e placa")
+        void transferirPreservaIdentidade() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            VeiculoId idAntes = v.id();
+            ClienteId novoDono = ClienteId.novo();
+            v.transferirPara(novoDono);
+            assertEquals(novoDono, v.dono());
+            assertSame(idAntes, v.id());
+            assertSame(PLACA, v.placa());
+        }
+
+        @Test
+        @DisplayName("transferirPara rejeita destino nulo")
+        void transferirRejeitaNulo() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> v.transferirPara(null)
+            );
+            assertEquals("dono do veículo não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("transferirPara rejeita o mesmo dono atual")
+        void transferirRejeitaMesmoDono() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> v.transferirPara(DONO)
+            );
+            assertEquals("veículo já pertence a esse cliente", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("transferência falha não modifica o dono")
+        void transferenciaFalhaPreservaDonoAtual() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            assertThrows(IllegalArgumentException.class, () -> v.transferirPara(null));
+            assertThrows(IllegalArgumentException.class, () -> v.transferirPara(DONO));
+            assertSame(DONO, v.dono());
+        }
+
+        @Test
+        @DisplayName("transferências sucessivas para donos distintos atualizam o estado")
+        void transferenciasSucessivas() {
+            Veiculo v = Veiculo.novo(PLACA, "Fiat", "Uno", 2010, DONO);
+            ClienteId segundo = ClienteId.novo();
+            ClienteId terceiro = ClienteId.novo();
+            v.transferirPara(segundo);
+            v.transferirPara(terceiro);
+            assertEquals(terceiro, v.dono());
+        }
+    }
 }

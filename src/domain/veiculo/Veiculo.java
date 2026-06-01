@@ -91,6 +91,14 @@ public final class Veiculo {
         this.ano = validarAno(novoAno);
     }
 
+    public void transferirPara(ClienteId novoDono) {
+        exigirDonoNaoNulo(novoDono);
+        if (novoDono.equals(this.dono)) {
+            throw new IllegalArgumentException("veículo já pertence a esse cliente");
+        }
+        this.dono = novoDono;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
