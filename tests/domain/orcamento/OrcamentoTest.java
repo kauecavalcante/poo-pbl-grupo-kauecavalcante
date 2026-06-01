@@ -12,6 +12,7 @@ import domain.shared.Preco;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,18 @@ class OrcamentoTest {
         @DisplayName("dois orçamentos novos recebem IDs distintos")
         void novoGeraIdsDistintos() {
             assertEquals(false, Orcamento.novo().id().equals(Orcamento.novo().id()));
+        }
+
+        @Test
+        @DisplayName("orçamento novo começa no estado RASCUNHO")
+        void novoComecaEmRascunho() {
+            assertEquals(StatusOrcamento.RASCUNHO, Orcamento.novo().status());
+        }
+
+        @Test
+        @DisplayName("orçamento novo não tem motivo de rejeição")
+        void novoNaoTemMotivoRejeicao() {
+            assertEquals(Optional.empty(), Orcamento.novo().motivoRejeicao());
         }
     }
 

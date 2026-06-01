@@ -5,19 +5,22 @@ import domain.shared.Preco;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Orcamento {
 
     private final OrcamentoId id;
     private final List<ItemDeOrcamento> itens;
+    private EstadoOrcamento estado;
 
-    private Orcamento(OrcamentoId id, List<ItemDeOrcamento> itens) {
+    private Orcamento(OrcamentoId id, List<ItemDeOrcamento> itens, EstadoOrcamento estado) {
         this.id = id;
         this.itens = itens;
+        this.estado = estado;
     }
 
     public static Orcamento novo() {
-        return new Orcamento(OrcamentoId.novo(), new ArrayList<>());
+        return new Orcamento(OrcamentoId.novo(), new ArrayList<>(), new Rascunho());
     }
 
     public static Orcamento reconstituir(OrcamentoId id, List<ItemDeOrcamento> itens) {
@@ -32,11 +35,19 @@ public final class Orcamento {
                 throw new IllegalArgumentException("itens do orçamento não podem ser nulos");
             }
         }
-        return new Orcamento(id, new ArrayList<>(itens));
+        return new Orcamento(id, new ArrayList<>(itens), new Rascunho());
     }
 
     public OrcamentoId id() {
         return id;
+    }
+
+    public StatusOrcamento status() {
+        return estado.status();
+    }
+
+    public Optional<String> motivoRejeicao() {
+        return estado instanceof Rejeitado rejeitado ? Optional.of(rejeitado.motivo()) : Optional.empty();
     }
 
     public int quantidadeDeItens() {
