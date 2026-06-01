@@ -529,6 +529,99 @@ class OrcamentoTest {
     }
 
     @Nested
+    @DisplayName("Restrição de edição por estado")
+    class RestricaoDeEdicao {
+
+        @Test
+        @DisplayName("adicionarItemDePeca em ENVIADO é bloqueado")
+        void adicionarItemDePecaEmEnviadoBloqueado() {
+            Orcamento o = orcamentoEnviado();
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.adicionarItemDePeca(PECA_ID, "Outra peça", Preco.deReais("30.00"), 1)
+            );
+            assertTrue(ex.getMessage().contains("ENVIADO"));
+        }
+
+        @Test
+        @DisplayName("adicionarItemDeMaoDeObra em ENVIADO é bloqueado")
+        void adicionarItemDeMaoDeObraEmEnviadoBloqueado() {
+            Orcamento o = orcamentoEnviado();
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.adicionarItemDeMaoDeObra("Diagnóstico", Preco.deReais("50.00"), 1)
+            );
+            assertTrue(ex.getMessage().contains("ENVIADO"));
+        }
+
+        @Test
+        @DisplayName("removerItem em ENVIADO é bloqueado")
+        void removerItemEmEnviadoBloqueado() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId itemId = o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.enviar();
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.removerItem(itemId)
+            );
+            assertTrue(ex.getMessage().contains("ENVIADO"));
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidadeDeItem em ENVIADO é bloqueado")
+        void atualizarQuantidadeEmEnviadoBloqueado() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId itemId = o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.enviar();
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.atualizarQuantidadeDeItem(itemId, 5)
+            );
+            assertTrue(ex.getMessage().contains("ENVIADO"));
+        }
+
+        @Test
+        @DisplayName("edição em APROVADO menciona o estado correto na mensagem")
+        void edicaoEmAprovadoBloqueada() {
+            Orcamento o = orcamentoEnviado();
+            o.aprovar();
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.adicionarItemDeMaoDeObra("Diagnóstico", Preco.deReais("50.00"), 1)
+            );
+            assertTrue(ex.getMessage().contains("APROVADO"));
+        }
+
+        @Test
+        @DisplayName("edição em REJEITADO menciona o estado correto na mensagem")
+        void edicaoEmRejeitadoBloqueada() {
+            Orcamento o = orcamentoEnviado();
+            o.rejeitar("Cliente desistiu");
+            IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> o.adicionarItemDeMaoDeObra("Diagnóstico", Preco.deReais("50.00"), 1)
+            );
+            assertTrue(ex.getMessage().contains("REJEITADO"));
+        }
+
+        @Test
+        @DisplayName("edição continua livre em RASCUNHO (regressão)")
+        void edicaoEmRascunhoFunciona() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            assertEquals(2, o.quantidadeDeItens());
+        }
+
+        private Orcamento orcamentoEnviado() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 1);
+            o.enviar();
+            return o;
+        }
+    }
+
+    @Nested
     @DisplayName("Representação textual")
     class Formatacao {
 

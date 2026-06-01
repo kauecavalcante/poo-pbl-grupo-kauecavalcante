@@ -74,6 +74,7 @@ public final class Orcamento {
 
     public ItemDeOrcamentoId adicionarItemDePeca(PecaId pecaId, String descricao,
                                                  Preco precoUnitario, int quantidade) {
+        exigirEdicaoPermitida();
         ItemDeOrcamento item = ItemDeOrcamento.dePeca(pecaId, descricao, precoUnitario, quantidade);
         itens.add(item);
         return item.id();
@@ -81,12 +82,14 @@ public final class Orcamento {
 
     public ItemDeOrcamentoId adicionarItemDeMaoDeObra(String descricao,
                                                       Preco precoUnitario, int quantidade) {
+        exigirEdicaoPermitida();
         ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra(descricao, precoUnitario, quantidade);
         itens.add(item);
         return item.id();
     }
 
     public void removerItem(ItemDeOrcamentoId itemId) {
+        exigirEdicaoPermitida();
         if (itemId == null) {
             throw new IllegalArgumentException("id do item de orçamento não pode ser nulo");
         }
@@ -95,10 +98,18 @@ public final class Orcamento {
     }
 
     public void atualizarQuantidadeDeItem(ItemDeOrcamentoId itemId, int novaQuantidade) {
+        exigirEdicaoPermitida();
         if (itemId == null) {
             throw new IllegalArgumentException("id do item de orçamento não pode ser nulo");
         }
         encontrar(itemId).atualizarQuantidade(novaQuantidade);
+    }
+
+    private void exigirEdicaoPermitida() {
+        if (!estado.podeEditarItens()) {
+            throw new IllegalStateException(
+                "itens do orçamento não podem ser modificados no estado " + estado.status());
+        }
     }
 
     public void enviar() {
