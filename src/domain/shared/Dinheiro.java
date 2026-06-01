@@ -55,11 +55,19 @@ public final class Dinheiro {
     }
 
     public Dinheiro somar(Dinheiro outro) {
+        exigirMesmaMoeda(outro);
         return new Dinheiro(this.valor.add(outro.valor), this.moeda);
     }
 
     public Dinheiro subtrair(Dinheiro outro) {
+        exigirMesmaMoeda(outro);
         return new Dinheiro(this.valor.subtract(outro.valor), this.moeda);
+    }
+
+    private void exigirMesmaMoeda(Dinheiro outro) {
+        if (!this.moeda.equals(outro.moeda)) {
+            throw new MoedasIncompativeisException(this.moeda, outro.moeda);
+        }
     }
 
     public Dinheiro multiplicar(BigDecimal fator) {

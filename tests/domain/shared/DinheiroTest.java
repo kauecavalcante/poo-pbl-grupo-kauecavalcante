@@ -233,4 +233,50 @@ class DinheiroTest {
             assertEquals(Dinheiro.deReais("10.00"), original);
         }
     }
+
+    @Nested
+    @DisplayName("Incompatibilidade entre moedas")
+    class MoedasDistintas {
+
+        @Test
+        @DisplayName("somar moedas diferentes lança MoedasIncompativeisException")
+        void somaEntreMoedasDistintasLancaExcecao() {
+            Dinheiro reais = Dinheiro.de(new BigDecimal("10.00"), BRL);
+            Dinheiro dolares = Dinheiro.de(new BigDecimal("10.00"), USD);
+
+            MoedasIncompativeisException ex = assertThrows(
+                MoedasIncompativeisException.class,
+                () -> reais.somar(dolares)
+            );
+            assertTrue(ex.getMessage().contains("BRL"));
+            assertTrue(ex.getMessage().contains("USD"));
+        }
+
+        @Test
+        @DisplayName("subtrair moedas diferentes lança MoedasIncompativeisException")
+        void subtracaoEntreMoedasDistintasLancaExcecao() {
+            Dinheiro reais = Dinheiro.de(new BigDecimal("10.00"), BRL);
+            Dinheiro dolares = Dinheiro.de(new BigDecimal("10.00"), USD);
+
+            MoedasIncompativeisException ex = assertThrows(
+                MoedasIncompativeisException.class,
+                () -> reais.subtrair(dolares)
+            );
+            assertTrue(ex.getMessage().contains("BRL"));
+            assertTrue(ex.getMessage().contains("USD"));
+        }
+
+        @Test
+        @DisplayName("mensagem da exceção identifica explicitamente as duas moedas")
+        void mensagemDaExcecaoCitaAmbasMoedas() {
+            Dinheiro reais = Dinheiro.de(new BigDecimal("1.00"), BRL);
+            Dinheiro dolares = Dinheiro.de(new BigDecimal("1.00"), USD);
+
+            MoedasIncompativeisException ex = assertThrows(
+                MoedasIncompativeisException.class,
+                () -> reais.somar(dolares)
+            );
+            assertEquals("operação entre moedas distintas: BRL e USD", ex.getMessage());
+        }
+    }
 }
