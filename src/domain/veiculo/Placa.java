@@ -1,6 +1,7 @@
 package domain.veiculo;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class Placa {
@@ -41,5 +42,30 @@ public final class Placa {
 
     public boolean ehMercosul() {
         return MERCOSUL.matcher(valor).matches();
+    }
+
+    public String formatada() {
+        return valor.substring(0, 3) + "-" + valor.substring(3);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Placa outra)) {
+            return false;
+        }
+        return valor.equals(outra.valor);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(valor);
+    }
+
+    @Override
+    public String toString() {
+        return formatada();
     }
 }
