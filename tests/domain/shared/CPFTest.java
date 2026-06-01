@@ -133,4 +133,60 @@ class CPFTest {
             assertEquals("cpf inválido", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Dígitos verificadores")
+    class DigitosVerificadores {
+
+        @ParameterizedTest(name = "aceita CPF válido {0}")
+        @ValueSource(strings = {
+            "529.982.247-25",
+            "111.444.777-35",
+            "390.533.447-05"
+        })
+        @DisplayName("aceita CPFs com dígitos verificadores corretos")
+        void aceitaCpfValido(String entrada) {
+            CPF cpf = CPF.de(entrada);
+            assertEquals(11, cpf.numero().length());
+        }
+
+        @Test
+        @DisplayName("rejeita CPF com 10º dígito (DV1) errado")
+        void rejeitaDv1Errado() {
+            // "529.982.247-25" é válido; trocar DV1 de 2 para 1 invalida só o primeiro DV
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> CPF.de("529.982.247-15")
+            );
+            assertEquals("cpf inválido", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("rejeita CPF com 11º dígito (DV2) errado")
+        void rejeitaDv2Errado() {
+            // "529.982.247-25" é válido; trocar DV2 de 5 para 6 invalida só o segundo DV
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> CPF.de("529.982.247-26")
+            );
+            assertEquals("cpf inválido", ex.getMessage());
+        }
+
+        @ParameterizedTest(name = "rejeita CPF inválido {0}")
+        @ValueSource(strings = {
+            "123.456.789-00",
+            "390.533.447-04",
+            "111.444.777-30",
+            "390.533.447-15",
+            "111.444.777-99"
+        })
+        @DisplayName("rejeita CPFs com dígitos verificadores incorretos")
+        void rejeitaCpfsInvalidos(String entrada) {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> CPF.de(entrada)
+            );
+            assertEquals("cpf inválido", ex.getMessage());
+        }
+    }
 }

@@ -18,7 +18,7 @@ public final class CPF {
         if (limpo.length() != TAMANHO || !contemSomenteDigitos(limpo)) {
             throw new IllegalArgumentException("cpf deve ter 11 dígitos");
         }
-        if (todosDigitosIguais(limpo)) {
+        if (todosDigitosIguais(limpo) || !digitosVerificadoresCorretos(limpo)) {
             throw new IllegalArgumentException("cpf inválido");
         }
         return new CPF(limpo);
@@ -45,5 +45,23 @@ public final class CPF {
             }
         }
         return true;
+    }
+
+    private static boolean digitosVerificadoresCorretos(String s) {
+        int dv1Esperado = calcularDigitoVerificador(s, 9, 10);
+        if (dv1Esperado != Character.digit(s.charAt(9), 10)) {
+            return false;
+        }
+        int dv2Esperado = calcularDigitoVerificador(s, 10, 11);
+        return dv2Esperado == Character.digit(s.charAt(10), 10);
+    }
+
+    private static int calcularDigitoVerificador(String s, int quantidade, int pesoInicial) {
+        int soma = 0;
+        for (int i = 0; i < quantidade; i++) {
+            soma += Character.digit(s.charAt(i), 10) * (pesoInicial - i);
+        }
+        int resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
     }
 }
