@@ -182,4 +182,105 @@ class OrcamentoTest {
             assertEquals(terceiro, lista.get(2).id());
         }
     }
+
+    @Nested
+    @DisplayName("Remoção e atualização de itens")
+    class RemocaoEAtualizacao {
+
+        @Test
+        @DisplayName("removerItem retira o item da lista e ajusta o total")
+        void removerItem() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId itemA = o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 2);
+            o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+
+            o.removerItem(itemA);
+
+            assertEquals(1, o.quantidadeDeItens());
+            assertEquals(Preco.deReais("80.00"), o.total());
+        }
+
+        @Test
+        @DisplayName("removerItem rejeita ID não pertencente ao orçamento")
+        void removerItemInexistente() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> o.removerItem(ItemDeOrcamentoId.novo())
+            );
+            assertEquals("item não encontrado no orçamento", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("removerItem rejeita ID nulo")
+        void removerItemRejeitaIdNulo() {
+            Orcamento o = Orcamento.novo();
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> o.removerItem(null)
+            );
+            assertEquals("id do item de orçamento não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidadeDeItem atualiza quantidade e total")
+        void atualizarQuantidadeDeItem() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId itemId = o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 2);
+
+            o.atualizarQuantidadeDeItem(itemId, 5);
+
+            assertEquals(Preco.deReais("250.00"), o.total());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidadeDeItem rejeita ID não pertencente ao orçamento")
+        void atualizarQuantidadeDeItemInexistente() {
+            Orcamento o = Orcamento.novo();
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> o.atualizarQuantidadeDeItem(ItemDeOrcamentoId.novo(), 3)
+            );
+            assertEquals("item não encontrado no orçamento", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidadeDeItem rejeita ID nulo")
+        void atualizarQuantidadeDeItemRejeitaIdNulo() {
+            Orcamento o = Orcamento.novo();
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> o.atualizarQuantidadeDeItem(null, 3)
+            );
+            assertEquals("id do item de orçamento não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidadeDeItem rejeita quantidade não positiva")
+        void atualizarQuantidadeDeItemRejeitaNaoPositiva() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId itemId = o.adicionarItemDePeca(PECA_ID, "Filtro", Preco.deReais("50.00"), 2);
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> o.atualizarQuantidadeDeItem(itemId, 0)
+            );
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> o.atualizarQuantidadeDeItem(itemId, -1)
+            );
+        }
+
+        @Test
+        @DisplayName("remover todos os itens deixa o orçamento vazio novamente")
+        void removerTodosOsItens() {
+            Orcamento o = Orcamento.novo();
+            ItemDeOrcamentoId a = o.adicionarItemDeMaoDeObra("Troca A", Preco.deReais("10.00"), 1);
+            ItemDeOrcamentoId b = o.adicionarItemDeMaoDeObra("Troca B", Preco.deReais("20.00"), 1);
+            o.removerItem(a);
+            o.removerItem(b);
+            assertTrue(o.ehVazio());
+            assertEquals(Preco.zero(), o.total());
+        }
+    }
 }

@@ -58,4 +58,26 @@ public final class Orcamento {
         itens.add(item);
         return item.id();
     }
+
+    public void removerItem(ItemDeOrcamentoId itemId) {
+        if (itemId == null) {
+            throw new IllegalArgumentException("id do item de orçamento não pode ser nulo");
+        }
+        ItemDeOrcamento alvo = encontrar(itemId);
+        itens.remove(alvo);
+    }
+
+    public void atualizarQuantidadeDeItem(ItemDeOrcamentoId itemId, int novaQuantidade) {
+        if (itemId == null) {
+            throw new IllegalArgumentException("id do item de orçamento não pode ser nulo");
+        }
+        encontrar(itemId).atualizarQuantidade(novaQuantidade);
+    }
+
+    private ItemDeOrcamento encontrar(ItemDeOrcamentoId itemId) {
+        return itens.stream()
+            .filter(i -> i.id().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("item não encontrado no orçamento"));
+    }
 }
