@@ -304,4 +304,83 @@ class PecaTest {
             assertEquals("quantidade não pode ser negativa", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Alteração de descrição e preço")
+    class Mutacoes {
+
+        @Test
+        @DisplayName("alterarDescricao substitui o valor preservando ID, código e estoque")
+        void alterarDescricaoPreservaIdentidade() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            PecaId idAntes = p.id();
+            p.alterarDescricao("Filtro de óleo premium");
+            assertEquals("Filtro de óleo premium", p.descricao());
+            assertSame(idAntes, p.id());
+            assertEquals("FLT-1001", p.codigo());
+            assertEquals(10, p.estoque());
+        }
+
+        @Test
+        @DisplayName("alterarDescricao aplica trim")
+        void alterarDescricaoAplicaTrim() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            p.alterarDescricao("   Filtro de óleo premium   ");
+            assertEquals("Filtro de óleo premium", p.descricao());
+        }
+
+        @Test
+        @DisplayName("alterarDescricao rejeita valor nulo")
+        void alterarDescricaoRejeitaNulo() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.alterarDescricao(null)
+            );
+            assertEquals("descrição da peça não pode ser vazia", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarDescricao rejeita valor curto")
+        void alterarDescricaoRejeitaCurto() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.alterarDescricao("AB")
+            );
+            assertEquals("descrição da peça deve ter ao menos 3 caracteres", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alterarPreco substitui o valor preservando identidade")
+        void alterarPrecoPreservaIdentidade() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            PecaId idAntes = p.id();
+            Preco novoPreco = Preco.deReais("250.00");
+            p.alterarPreco(novoPreco);
+            assertSame(novoPreco, p.preco());
+            assertSame(idAntes, p.id());
+        }
+
+        @Test
+        @DisplayName("alterarPreco rejeita valor nulo")
+        void alterarPrecoRejeitaNulo() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.alterarPreco(null)
+            );
+            assertEquals("preço não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("alteração falha não modifica o estado da peça")
+        void alteracaoFalhaNaoModificaEstado() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertThrows(IllegalArgumentException.class, () -> p.alterarDescricao(""));
+            assertThrows(IllegalArgumentException.class, () -> p.alterarPreco(null));
+            assertEquals("Filtro de óleo", p.descricao());
+            assertSame(PRECO_PADRAO, p.preco());
+        }
+    }
 }

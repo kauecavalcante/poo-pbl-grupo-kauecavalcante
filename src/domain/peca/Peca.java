@@ -77,6 +77,15 @@ public final class Peca {
         return estoque >= quantidade;
     }
 
+    public void alterarDescricao(String novaDescricao) {
+        this.descricao = validarDescricao(novaDescricao);
+    }
+
+    public void alterarPreco(Preco novoPreco) {
+        exigirPrecoNaoNulo(novoPreco);
+        this.preco = novoPreco;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
