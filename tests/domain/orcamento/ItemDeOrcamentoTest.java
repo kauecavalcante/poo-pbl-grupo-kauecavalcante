@@ -161,4 +161,68 @@ class ItemDeOrcamentoTest {
             assertEquals("quantidade do item deve ser positiva", ex.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("Subtotal e atualização de quantidade")
+    class CalculoEAtualizacao {
+
+        @Test
+        @DisplayName("subtotal de item de peça é preço unitário multiplicado pela quantidade")
+        void subtotalPeca() {
+            ItemDeOrcamento item = ItemDeOrcamento.dePeca(PECA_ID, "Filtro de óleo", Preco.deReais("25.00"), 4);
+            assertEquals(Preco.deReais("100.00"), item.subtotal());
+        }
+
+        @Test
+        @DisplayName("subtotal de item de mão de obra também escala pela quantidade")
+        void subtotalMaoDeObra() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca de filtro", Preco.deReais("80.00"), 2);
+            assertEquals(Preco.deReais("160.00"), item.subtotal());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidade reflete na quantidade e no subtotal")
+        void atualizarQuantidadeRefleteNoSubtotal() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca de filtro", Preco.deReais("80.00"), 2);
+            item.atualizarQuantidade(5);
+            assertEquals(5, item.quantidade());
+            assertEquals(Preco.deReais("400.00"), item.subtotal());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidade preserva a identidade do item")
+        void atualizarQuantidadePreservaIdentidade() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca de filtro", PRECO, 2);
+            ItemDeOrcamentoId idAntes = item.id();
+            item.atualizarQuantidade(7);
+            assertSame(idAntes, item.id());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidade rejeita zero")
+        void atualizarQuantidadeRejeitaZero() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca de filtro", PRECO, 2);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> item.atualizarQuantidade(0)
+            );
+            assertEquals("quantidade do item deve ser positiva", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("atualizarQuantidade rejeita valor negativo")
+        void atualizarQuantidadeRejeitaNegativo() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca de filtro", PRECO, 2);
+            assertThrows(IllegalArgumentException.class, () -> item.atualizarQuantidade(-1));
+        }
+
+        @Test
+        @DisplayName("atualização falha não modifica a quantidade")
+        void atualizacaoFalhaNaoModificaEstado() {
+            ItemDeOrcamento item = ItemDeOrcamento.deMaoDeObra("Troca de filtro", PRECO, 2);
+            assertThrows(IllegalArgumentException.class, () -> item.atualizarQuantidade(0));
+            assertThrows(IllegalArgumentException.class, () -> item.atualizarQuantidade(-3));
+            assertEquals(2, item.quantidade());
+        }
+    }
 }

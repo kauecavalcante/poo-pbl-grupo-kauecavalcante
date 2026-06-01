@@ -80,6 +80,14 @@ public final class ItemDeOrcamento {
         return tipo == TipoItem.MAO_DE_OBRA;
     }
 
+    public Preco subtotal() {
+        return precoUnitario.multiplicar(quantidade);
+    }
+
+    public void atualizarQuantidade(int novaQuantidade) {
+        this.quantidade = validarQuantidade(novaQuantidade);
+    }
+
     private static String validarDescricao(String descricao) {
         if (descricao == null || descricao.trim().isEmpty()) {
             throw new IllegalArgumentException("descrição do item não pode ser vazia");
