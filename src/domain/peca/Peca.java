@@ -66,6 +66,17 @@ public final class Peca {
         return estoque;
     }
 
+    public boolean temEstoque() {
+        return estoque > 0;
+    }
+
+    public boolean temEstoqueSuficiente(int quantidade) {
+        if (quantidade < 0) {
+            throw new IllegalArgumentException("quantidade não pode ser negativa");
+        }
+        return estoque >= quantidade;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

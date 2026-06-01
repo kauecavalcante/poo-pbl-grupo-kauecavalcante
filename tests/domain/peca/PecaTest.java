@@ -246,4 +246,62 @@ class PecaTest {
             assertTrue(p.equals(p));
         }
     }
+
+    @Nested
+    @DisplayName("Predicados de estoque")
+    class Predicados {
+
+        @Test
+        @DisplayName("temEstoque retorna false para peça em ruptura")
+        void temEstoqueFalsoQuandoZero() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 0);
+            assertFalse(p.temEstoque());
+        }
+
+        @Test
+        @DisplayName("temEstoque retorna true para qualquer quantidade positiva")
+        void temEstoqueTrueQuandoPositivo() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 1);
+            assertTrue(p.temEstoque());
+        }
+
+        @Test
+        @DisplayName("temEstoqueSuficiente retorna true quando estoque excede a quantidade pedida")
+        void temEstoqueSuficienteExcedente() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.temEstoqueSuficiente(5));
+        }
+
+        @Test
+        @DisplayName("temEstoqueSuficiente retorna true quando estoque iguala a quantidade pedida")
+        void temEstoqueSuficienteExato() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.temEstoqueSuficiente(10));
+        }
+
+        @Test
+        @DisplayName("temEstoqueSuficiente retorna false quando estoque é menor que a quantidade pedida")
+        void temEstoqueSuficienteInsuficiente() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 3);
+            assertFalse(p.temEstoqueSuficiente(5));
+        }
+
+        @Test
+        @DisplayName("temEstoqueSuficiente para quantidade zero é sempre verdadeiro")
+        void temEstoqueSuficienteZero() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 0);
+            assertTrue(p.temEstoqueSuficiente(0));
+        }
+
+        @Test
+        @DisplayName("temEstoqueSuficiente rejeita quantidade negativa")
+        void temEstoqueSuficienteRejeitaNegativo() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> p.temEstoqueSuficiente(-1)
+            );
+            assertEquals("quantidade não pode ser negativa", ex.getMessage());
+        }
+    }
 }
