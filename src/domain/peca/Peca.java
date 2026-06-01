@@ -1,0 +1,91 @@
+package domain.peca;
+
+import domain.shared.Preco;
+
+public final class Peca {
+
+    // codigo é final: o catálogo identifica a peça pelo código; trocar código
+    // equivale a registrar uma nova peça, não a alterar a existente.
+    private final PecaId id;
+    private final String codigo;
+    private String descricao;
+    private Preco preco;
+    private int estoque;
+
+    private Peca(PecaId id, String codigo, String descricao, Preco preco, int estoque) {
+        this.id = id;
+        this.codigo = codigo;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.estoque = estoque;
+    }
+
+    public static Peca nova(String codigo, String descricao, Preco preco, int estoqueInicial) {
+        exigirPrecoNaoNulo(preco);
+        return new Peca(
+            PecaId.novo(),
+            validarCodigo(codigo),
+            validarDescricao(descricao),
+            preco,
+            validarEstoque(estoqueInicial)
+        );
+    }
+
+    public PecaId id() {
+        return id;
+    }
+
+    public String codigo() {
+        return codigo;
+    }
+
+    public String descricao() {
+        return descricao;
+    }
+
+    public Preco preco() {
+        return preco;
+    }
+
+    public int estoque() {
+        return estoque;
+    }
+
+    private static String validarCodigo(String codigo) {
+        if (codigo == null || codigo.trim().isEmpty()) {
+            throw new IllegalArgumentException("código da peça não pode ser vazio");
+        }
+        String normalizado = codigo.trim();
+        if (normalizado.length() < 3) {
+            throw new IllegalArgumentException("código da peça deve ter ao menos 3 caracteres");
+        }
+        if (normalizado.contains(" ")) {
+            throw new IllegalArgumentException("código da peça não pode conter espaços");
+        }
+        return normalizado;
+    }
+
+    private static String validarDescricao(String descricao) {
+        if (descricao == null || descricao.trim().isEmpty()) {
+            throw new IllegalArgumentException("descrição da peça não pode ser vazia");
+        }
+        String normalizada = descricao.trim();
+        if (normalizada.length() < 3) {
+            throw new IllegalArgumentException("descrição da peça deve ter ao menos 3 caracteres");
+        }
+        return normalizada;
+    }
+
+    private static void exigirPrecoNaoNulo(Preco preco) {
+        if (preco == null) {
+            throw new IllegalArgumentException("preço não pode ser nulo");
+        }
+    }
+
+    private static int validarEstoque(int estoque) {
+        if (estoque < 0) {
+            throw new IllegalArgumentException("estoque não pode ser negativo");
+        }
+        return estoque;
+    }
+}
