@@ -1,9 +1,12 @@
 package domain.peca;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import domain.shared.Preco;
 import org.junit.jupiter.api.DisplayName;
@@ -156,6 +159,91 @@ class PecaTest {
                 () -> Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, -1)
             );
             assertEquals("estoque não pode ser negativo", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("Reconstituição a partir de identidade existente")
+    class Reconstituicao {
+
+        @Test
+        @DisplayName("reconstituir preserva o ID informado")
+        void reconstituirPreservaId() {
+            PecaId id = PecaId.novo();
+            Peca p = Peca.reconstituir(id, "FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertEquals(id, p.id());
+        }
+
+        @Test
+        @DisplayName("reconstituir rejeita ID nulo")
+        void reconstituirRejeitaIdNulo() {
+            IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> Peca.reconstituir(null, "FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10)
+            );
+            assertEquals("id da peça não pode ser nulo", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de código")
+        void reconstituirValidaCodigo() {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> Peca.reconstituir(PecaId.novo(), "AB", "Filtro de óleo", PRECO_PADRAO, 10)
+            );
+        }
+
+        @Test
+        @DisplayName("reconstituir aplica as mesmas validações de estoque")
+        void reconstituirValidaEstoque() {
+            assertThrows(
+                IllegalArgumentException.class,
+                () -> Peca.reconstituir(PecaId.novo(), "FLT-1001", "Filtro de óleo", PRECO_PADRAO, -5)
+            );
+        }
+    }
+
+    @Nested
+    @DisplayName("Igualdade por identidade")
+    class Igualdade {
+
+        @Test
+        @DisplayName("duas peças com mesmo ID são iguais mesmo com dados divergentes")
+        void iguaisQuandoMesmoIdAindaQueDadosMudem() {
+            PecaId id = PecaId.novo();
+            Peca antes = Peca.reconstituir(id, "FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            Peca depois = Peca.reconstituir(id, "FLT-1001", "Filtro de óleo premium", Preco.deReais("250.00"), 3);
+            assertEquals(antes, depois);
+            assertEquals(antes.hashCode(), depois.hashCode());
+        }
+
+        @Test
+        @DisplayName("duas peças com IDs diferentes não são iguais mesmo com dados idênticos")
+        void distintasQuandoIdsDiferentes() {
+            Peca a = Peca.reconstituir(PecaId.novo(), "FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            Peca b = Peca.reconstituir(PecaId.novo(), "FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertNotEquals(a, b);
+        }
+
+        @Test
+        @DisplayName("equals com null retorna false")
+        void equalsComNuloRetornaFalso() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertFalse(p.equals(null));
+        }
+
+        @Test
+        @DisplayName("equals com tipo diferente retorna false")
+        void equalsComOutroTipoRetornaFalso() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertFalse(p.equals(p.id()));
+        }
+
+        @Test
+        @DisplayName("a instância é igual a si mesma")
+        void reflexividade() {
+            Peca p = Peca.nova("FLT-1001", "Filtro de óleo", PRECO_PADRAO, 10);
+            assertTrue(p.equals(p));
         }
     }
 }

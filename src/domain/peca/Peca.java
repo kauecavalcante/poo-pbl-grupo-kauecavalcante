@@ -1,6 +1,7 @@
 package domain.peca;
 
 import domain.shared.Preco;
+import java.util.Objects;
 
 public final class Peca {
 
@@ -31,6 +32,20 @@ public final class Peca {
         );
     }
 
+    public static Peca reconstituir(PecaId id, String codigo, String descricao, Preco preco, int estoque) {
+        if (id == null) {
+            throw new IllegalArgumentException("id da peça não pode ser nulo");
+        }
+        exigirPrecoNaoNulo(preco);
+        return new Peca(
+            id,
+            validarCodigo(codigo),
+            validarDescricao(descricao),
+            preco,
+            validarEstoque(estoque)
+        );
+    }
+
     public PecaId id() {
         return id;
     }
@@ -49,6 +64,22 @@ public final class Peca {
 
     public int estoque() {
         return estoque;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Peca outra)) {
+            return false;
+        }
+        return id.equals(outra.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     private static String validarCodigo(String codigo) {
