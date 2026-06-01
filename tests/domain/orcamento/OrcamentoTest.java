@@ -399,4 +399,33 @@ class OrcamentoTest {
             assertTrue(o.equals(o));
         }
     }
+
+    @Nested
+    @DisplayName("Representação textual")
+    class Formatacao {
+
+        @Test
+        @DisplayName("toString contém o ID")
+        void toStringContemId() {
+            Orcamento o = Orcamento.novo();
+            assertTrue(o.toString().contains(o.id().toString()));
+        }
+
+        @Test
+        @DisplayName("toString contém a quantidade de itens")
+        void toStringContemQuantidadeDeItens() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            o.adicionarItemDeMaoDeObra("Outra", Preco.deReais("40.00"), 1);
+            assertTrue(o.toString().contains("2"));
+        }
+
+        @Test
+        @DisplayName("toString contém o total formatado")
+        void toStringContemTotal() {
+            Orcamento o = Orcamento.novo();
+            o.adicionarItemDeMaoDeObra("Troca", Preco.deReais("80.00"), 1);
+            assertTrue(o.toString().contains(o.total().toString()));
+        }
+    }
 }

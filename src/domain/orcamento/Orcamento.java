@@ -112,4 +112,11 @@ public final class Orcamento {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return "Orcamento{id=" + id
+            + ", itens=" + itens.size()
+            + ", total=" + total() + "}";
+    }
 }
