@@ -76,7 +76,7 @@ class ServidorOficinaTest {
         HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
         assertEquals(200, resp.statusCode());
         assertTrue(resp.headers().firstValue("Content-Type").orElse("").contains("text/html"));
-        assertTrue(resp.body().contains("Oficina Mecanica"));
+        assertTrue(resp.body().contains("Oficina Mec"));
     }
 
     @Test

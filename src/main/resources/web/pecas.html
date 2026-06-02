@@ -2,34 +2,34 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <title>Pecas - Oficina Mecanica</title>
+    <title>Peças - Oficina Mecânica</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <header>
-        <h1>Oficina Mecanica</h1>
+        <h1>Oficina Mecânica</h1>
         <nav>
-            <a href="/index.html">Inicio</a>
+            <a href="/index.html">Início</a>
             <a href="/clientes.html">Clientes</a>
-            <a href="/veiculos.html">Veiculos</a>
-            <a href="/pecas.html">Pecas</a>
-            <a href="/ordens.html">Ordens de Servico</a>
+            <a href="/veiculos.html">Veículos</a>
+            <a href="/pecas.html">Peças</a>
+            <a href="/ordens.html">Ordens de Serviço</a>
         </nav>
     </header>
     <main>
         <section class="card">
-            <h2>Cadastrar Peca</h2>
+            <h2>Cadastrar Peça</h2>
             <form id="form-cadastrar">
                 <label>
-                    Codigo
+                    Código
                     <input type="text" id="codigo" placeholder="FLT-001" required>
                 </label>
                 <label>
-                    Descricao
-                    <input type="text" id="descricao" placeholder="Filtro de oleo" required>
+                    Descrição
+                    <input type="text" id="descricao" placeholder="Filtro de óleo" required>
                 </label>
                 <label>
-                    Preco (R$)
+                    Preço (R$)
                     <input type="text" id="preco" placeholder="49.90" required>
                 </label>
                 <label>
@@ -44,11 +44,11 @@
         </section>
 
         <section class="card">
-            <h2>Buscar Peca por ID</h2>
+            <h2>Buscar Peça por ID</h2>
             <form id="form-buscar">
                 <label>
-                    ID da peca
-                    <input type="text" id="busca-id" placeholder="UUID da peca" required>
+                    ID da peça
+                    <input type="text" id="busca-id" placeholder="UUID da peça" required>
                 </label>
                 <div class="acoes">
                     <button type="submit" class="secundario">Buscar</button>
@@ -71,7 +71,7 @@
                     estoqueInicial: parseInt(document.getElementById('estoque').value, 10)
                 });
                 exibirSucesso(resultado,
-                    `Peca cadastrada com sucesso.<br>` +
+                    `Peça cadastrada com sucesso.<br>` +
                     `<span class="dado"><strong>ID:</strong> <code>${dados.id}</code></span>`
                 );
                 e.target.reset();
@@ -90,9 +90,9 @@
                 resultado.innerHTML =
                     `<div class="sucesso">` +
                     `<div class="dado"><strong>ID:</strong> <code>${p.id}</code></div>` +
-                    `<div class="dado"><strong>Codigo:</strong> ${p.codigo}</div>` +
-                    `<div class="dado"><strong>Descricao:</strong> ${p.descricao}</div>` +
-                    `<div class="dado"><strong>Preco:</strong> R$ ${p.precoReais}</div>` +
+                    `<div class="dado"><strong>Código:</strong> ${p.codigo}</div>` +
+                    `<div class="dado"><strong>Descrição:</strong> ${p.descricao}</div>` +
+                    `<div class="dado"><strong>Preço:</strong> R$ ${p.precoReais}</div>` +
                     `<div class="dado"><strong>Estoque:</strong> ${p.estoque} unidades</div>` +
                     `</div>`;
             } catch (erro) {

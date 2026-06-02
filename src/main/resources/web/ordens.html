@@ -2,31 +2,31 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <title>Ordens de Servico - Oficina Mecanica</title>
+    <title>Ordens de Serviço - Oficina Mecânica</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <header>
-        <h1>Oficina Mecanica</h1>
+        <h1>Oficina Mecânica</h1>
         <nav>
-            <a href="/index.html">Inicio</a>
+            <a href="/index.html">Início</a>
             <a href="/clientes.html">Clientes</a>
-            <a href="/veiculos.html">Veiculos</a>
-            <a href="/pecas.html">Pecas</a>
-            <a href="/ordens.html">Ordens de Servico</a>
+            <a href="/veiculos.html">Veículos</a>
+            <a href="/pecas.html">Peças</a>
+            <a href="/ordens.html">Ordens de Serviço</a>
         </nav>
     </header>
     <main>
         <section class="card">
-            <h2>Abrir Ordem de Servico</h2>
+            <h2>Abrir Ordem de Serviço</h2>
             <form id="form-abrir">
                 <label>
                     ID do cliente
                     <input type="text" id="abrir-clienteId" placeholder="UUID do cliente" required>
                 </label>
                 <label>
-                    ID do veiculo
-                    <input type="text" id="abrir-veiculoId" placeholder="UUID do veiculo" required>
+                    ID do veículo
+                    <input type="text" id="abrir-veiculoId" placeholder="UUID do veículo" required>
                 </label>
                 <div class="acoes">
                     <button type="submit" class="primario">Abrir OS</button>
@@ -36,7 +36,7 @@
         </section>
 
         <section class="card" id="painel-os" style="display:none">
-            <h2>Ordem de Servico Ativa</h2>
+            <h2>Ordem de Serviço Ativa</h2>
             <div id="os-detalhes"></div>
         </section>
 
@@ -44,7 +44,7 @@
             <h2>Buscar OS por ID</h2>
             <form id="form-buscar">
                 <label>
-                    ID da ordem de servico
+                    ID da ordem de serviço
                     <input type="text" id="busca-osId" placeholder="UUID da OS" required>
                 </label>
                 <div class="acoes">
@@ -109,26 +109,26 @@
                 `<div class="dado"><strong>ID:</strong> <code>${os.id}</code></div>` +
                 `<div class="dado"><strong>Status:</strong> <strong>${os.status}</strong></div>` +
                 `<div class="dado"><strong>Cliente ID:</strong> <code>${os.clienteId}</code></div>` +
-                `<div class="dado"><strong>Veiculo ID:</strong> <code>${os.veiculoId}</code></div>` +
+                `<div class="dado"><strong>Veículo ID:</strong> <code>${os.veiculoId}</code></div>` +
                 `<div class="dado"><strong>Abertura:</strong> ${os.dataAbertura || '-'}</div>`;
 
             if (os.diagnostico) {
-                html += `<div class="dado"><strong>Diagnostico:</strong> ${os.diagnostico}</div>`;
+                html += `<div class="dado"><strong>Diagnóstico:</strong> ${os.diagnostico}</div>`;
             }
             if (os.orcamentoId) {
-                html += `<div class="dado"><strong>Orcamento ID:</strong> <code>${os.orcamentoId}</code></div>`;
+                html += `<div class="dado"><strong>Orçamento ID:</strong> <code>${os.orcamentoId}</code></div>`;
             }
             if (os.dataConclusao) {
-                html += `<div class="dado"><strong>Conclusao:</strong> ${os.dataConclusao}</div>`;
+                html += `<div class="dado"><strong>Conclusão:</strong> ${os.dataConclusao}</div>`;
             }
             if (os.dataEntrega) {
                 html += `<div class="dado"><strong>Entrega:</strong> ${os.dataEntrega}</div>`;
             }
             if (os.motivoRejeicao) {
-                html += `<div class="dado"><strong>Motivo rejeicao:</strong> ${os.motivoRejeicao}</div>`;
+                html += `<div class="dado"><strong>Motivo de rejeição:</strong> ${os.motivoRejeicao}</div>`;
             }
             if (os.motivoCancelamento) {
-                html += `<div class="dado"><strong>Motivo cancelamento:</strong> ${os.motivoCancelamento}</div>`;
+                html += `<div class="dado"><strong>Motivo de cancelamento:</strong> ${os.motivoCancelamento}</div>`;
             }
 
             html += `<hr class="separador">`;
@@ -146,13 +146,13 @@
                 case 'AGUARDANDO_APROVACAO':
                     return botoesAprovacao() + botoesCancelar();
                 case 'EM_EXECUCAO':
-                    return `<div class="acoes"><button id="btn-concluir" class="primario">Concluir servico</button></div>` + botoesCancelar();
+                    return `<div class="acoes"><button id="btn-concluir" class="primario">Concluir serviço</button></div>` + botoesCancelar();
                 case 'CONCLUIDA':
-                    return `<div class="acoes"><button id="btn-entregar" class="primario">Entregar veiculo</button></div>` + botoesCancelar();
+                    return `<div class="acoes"><button id="btn-entregar" class="primario">Entregar veículo</button></div>` + botoesCancelar();
                 case 'ENTREGUE':
                     return `<div class="info">Ordem finalizada com entrega em ${os.dataEntrega}.</div>`;
                 case 'REJEITADA':
-                    return `<div class="erro">Orcamento rejeitado. Motivo: ${os.motivoRejeicao || '-'}</div>`;
+                    return `<div class="erro">Orçamento rejeitado. Motivo: ${os.motivoRejeicao || '-'}</div>`;
                 case 'CANCELADA':
                     return `<div class="erro">OS cancelada. Motivo: ${os.motivoCancelamento || '-'}</div>`;
                 default:
@@ -163,13 +163,13 @@
         function formDiagnostico() {
             return `
             <details open>
-                <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Registrar diagnostico</summary>
+                <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Registrar diagnóstico</summary>
                 <form id="form-diagnostico" style="margin-top:0.5rem">
                     <label>
-                        Descricao do diagnostico
+                        Descrição do diagnóstico
                         <input type="text" id="diag-texto" placeholder="Descreva o problema identificado" required>
                     </label>
-                    <div class="acoes"><button type="submit" class="primario">Salvar diagnostico</button></div>
+                    <div class="acoes"><button type="submit" class="primario">Salvar diagnóstico</button></div>
                 </form>
             </details>
             <hr class="separador">`;
@@ -178,18 +178,18 @@
         function formOrcamento() {
             return `
             <details open>
-                <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Montar orcamento</summary>
+                <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Montar orçamento</summary>
                 <div style="margin-top:0.5rem">
-                    <p style="margin:0 0 0.5rem;font-size:0.9rem;color:#555">Pecas do catalogo</p>
+                    <p style="margin:0 0 0.5rem;font-size:0.9rem;color:#555">Peças do catálogo</p>
                     <div id="lista-pecas"></div>
-                    <button type="button" id="btn-add-peca" class="secundario" style="margin-bottom:0.75rem">+ Adicionar peca</button>
+                    <button type="button" id="btn-add-peca" class="secundario" style="margin-bottom:0.75rem">+ Adicionar peça</button>
 
-                    <p style="margin:0 0 0.5rem;font-size:0.9rem;color:#555">Servicos de mao de obra</p>
+                    <p style="margin:0 0 0.5rem;font-size:0.9rem;color:#555">Serviços de mão de obra</p>
                     <div id="lista-maos"></div>
-                    <button type="button" id="btn-add-mao" class="secundario" style="margin-bottom:0.75rem">+ Adicionar servico</button>
+                    <button type="button" id="btn-add-mao" class="secundario" style="margin-bottom:0.75rem">+ Adicionar serviço</button>
 
                     <div class="acoes">
-                        <button type="button" id="btn-enviar-orcamento" class="primario">Enviar orcamento</button>
+                        <button type="button" id="btn-enviar-orcamento" class="primario">Enviar orçamento</button>
                     </div>
                 </div>
             </details>
@@ -199,16 +199,16 @@
         function botoesAprovacao() {
             return `
             <div class="acoes">
-                <button id="btn-aprovar" class="primario">Aprovar orcamento</button>
-                <button id="btn-abrir-rejeitar" class="perigo">Rejeitar orcamento</button>
+                <button id="btn-aprovar" class="primario">Aprovar orçamento</button>
+                <button id="btn-abrir-rejeitar" class="perigo">Rejeitar orçamento</button>
             </div>
             <div id="form-rejeitar-container" style="display:none;margin-top:0.75rem">
                 <label style="font-size:0.9rem;font-weight:500;color:#333">
-                    Motivo da rejeicao
+                    Motivo da rejeição
                     <input type="text" id="motivo-rejeicao" placeholder="Informe o motivo">
                 </label>
                 <div class="acoes" style="margin-top:0.4rem">
-                    <button id="btn-confirmar-rejeitar" class="perigo">Confirmar rejeicao</button>
+                    <button id="btn-confirmar-rejeitar" class="perigo">Confirmar rejeição</button>
                     <button id="btn-cancelar-rejeitar" class="secundario">Cancelar</button>
                 </div>
             </div>
@@ -259,7 +259,7 @@
                     const div = document.createElement('div');
                     div.className = 'grupo-item';
                     div.innerHTML = `
-                        <label>ID da peca <input type="text" class="peca-id" placeholder="UUID da peca"></label>
+                        <label>ID da peça <input type="text" class="peca-id" placeholder="UUID da peça"></label>
                         <label>Quantidade <input type="number" class="peca-qtd" value="1" min="1"></label>
                         <button type="button" class="secundario remover" onclick="this.parentElement.remove()">Remover</button>`;
                     lista.appendChild(div);
@@ -274,8 +274,8 @@
                     const div = document.createElement('div');
                     div.className = 'grupo-item';
                     div.innerHTML = `
-                        <label>Descricao <input type="text" class="mao-desc" placeholder="Ex: Troca de oleo"></label>
-                        <label>Preco (R$) <input type="text" class="mao-preco" placeholder="120.00"></label>
+                        <label>Descrição <input type="text" class="mao-desc" placeholder="Ex: Troca de óleo"></label>
+                        <label>Preço (R$) <input type="text" class="mao-preco" placeholder="120.00"></label>
                         <label>Quantidade <input type="number" class="mao-qtd" value="1" min="1"></label>
                         <button type="button" class="secundario remover" onclick="this.parentElement.remove()">Remover</button>`;
                     lista.appendChild(div);

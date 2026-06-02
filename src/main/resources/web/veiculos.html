@@ -2,23 +2,23 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8">
-    <title>Veiculos - Oficina Mecanica</title>
+    <title>Veículos - Oficina Mecânica</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <header>
-        <h1>Oficina Mecanica</h1>
+        <h1>Oficina Mecânica</h1>
         <nav>
-            <a href="/index.html">Inicio</a>
+            <a href="/index.html">Início</a>
             <a href="/clientes.html">Clientes</a>
-            <a href="/veiculos.html">Veiculos</a>
-            <a href="/pecas.html">Pecas</a>
-            <a href="/ordens.html">Ordens de Servico</a>
+            <a href="/veiculos.html">Veículos</a>
+            <a href="/pecas.html">Peças</a>
+            <a href="/ordens.html">Ordens de Serviço</a>
         </nav>
     </header>
     <main>
         <section class="card">
-            <h2>Cadastrar Veiculo</h2>
+            <h2>Cadastrar Veículo</h2>
             <form id="form-cadastrar">
                 <label>
                     Placa
@@ -37,7 +37,7 @@
                     <input type="number" id="ano" placeholder="2010" min="1900" max="2027" required>
                 </label>
                 <label>
-                    ID do proprietario
+                    ID do proprietário
                     <input type="text" id="donoId" placeholder="UUID do cliente" required>
                 </label>
                 <div class="acoes">
@@ -48,11 +48,11 @@
         </section>
 
         <section class="card">
-            <h2>Buscar Veiculo por ID</h2>
+            <h2>Buscar Veículo por ID</h2>
             <form id="form-buscar">
                 <label>
-                    ID do veiculo
-                    <input type="text" id="busca-id" placeholder="UUID do veiculo" required>
+                    ID do veículo
+                    <input type="text" id="busca-id" placeholder="UUID do veículo" required>
                 </label>
                 <div class="acoes">
                     <button type="submit" class="secundario">Buscar</button>
@@ -76,7 +76,7 @@
                     donoId: document.getElementById('donoId').value.trim()
                 });
                 exibirSucesso(resultado,
-                    `Veiculo cadastrado com sucesso.<br>` +
+                    `Veículo cadastrado com sucesso.<br>` +
                     `<span class="dado"><strong>ID:</strong> <code>${dados.id}</code></span>`
                 );
                 e.target.reset();
@@ -99,7 +99,7 @@
                     `<div class="dado"><strong>Marca:</strong> ${v.marca}</div>` +
                     `<div class="dado"><strong>Modelo:</strong> ${v.modelo}</div>` +
                     `<div class="dado"><strong>Ano:</strong> ${v.ano}</div>` +
-                    `<div class="dado"><strong>Proprietario ID:</strong> <code>${v.donoId}</code></div>` +
+                    `<div class="dado"><strong>Proprietário ID:</strong> <code>${v.donoId}</code></div>` +
                     `</div>`;
             } catch (erro) {
                 exibirErro(resultado, erro);
