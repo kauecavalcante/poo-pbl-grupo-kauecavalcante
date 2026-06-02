@@ -7,19 +7,19 @@ Trabalho acadêmico da disciplina de Orientação a Objetos — Ciência da Comp
 ## Stack
 
 - Java 21
-- Maven 3.9
+- Maven 3.9 ou superior
 - Javalin 6.3.0 (servidor HTTP)
 - Jackson 2.17.2 (serialização JSON)
 - SQLite via xerial jdbc 3.46.1.3 (persistência em arquivo local)
-- JUnit 5 + AssertJ (testes)
+- JUnit 5 + Mockito (testes)
 
 ## Como executar
 
 Pré-requisitos: JDK 21 e Maven 3.9 ou superior instalados e no `PATH`.
 
 ```
-mvn package -DskipTests
-java -jar target/oficina-mecanica-1.0-SNAPSHOT.jar
+mvn -B package -DskipTests
+java -cp "target/oficina-mecanica-0.1.0-SNAPSHOT.jar:$(mvn -q dependency:build-classpath -DincludeScope=runtime -Dmdep.outputFile=/dev/stdout)" presentation.ServidorOficina
 ```
 
 O servidor inicia na porta 8080. Acesse `http://localhost:8080` no navegador para abrir a interface web.
@@ -38,20 +38,20 @@ A suíte cobre 822 cenários distribuídos entre testes de unidade (domínio, ca
 
 ```
 src/
-  domain/          Entidades, objetos de valor, estados e regras de negócio puras
+  domain/          Entidades, objetos de valor, estados, interfaces de repositório e regras de negócio puras
     cliente/
     veiculo/
     peca/
     orcamento/
     ordemservico/
     shared/        CPF, Dinheiro, Preco (value objects reutilizáveis)
-  application/     Casos de uso e interfaces de repositório
+  application/     Casos de uso
     cliente/
     veiculo/
     peca/
     ordemservico/
   infrastructure/  Adaptadores de persistência
-    memoria/       Repositórios em HashMap (usados nos testes de aplicação)
+    memoria/       Repositórios em ConcurrentHashMap (usados nos testes de aplicação)
     sqlite/        Repositórios com JDBC direto e SQLite
   presentation/    Camada HTTP
     controller/    Quatro controladores REST (Cliente, Veiculo, Peca, OS)
@@ -77,7 +77,7 @@ Objetos de valor (`CPF`, `Preco`, `Dinheiro`, `Placa`) encapsulam invariantes qu
 
 ### State Pattern
 
-Tanto `Orcamento` quanto `OrdemDeServico` implementam máquinas de estado com o padrão State do GoF. Os estados são representados por interfaces seladas (`sealed interface`) cujas implementações — classes `record` ou `final class` — carregam apenas os dados relevantes para aquele estado.
+Tanto `Orcamento` quanto `OrdemDeServico` implementam máquinas de estado com o padrão State do GoF. Os estados são representados por interfaces seladas (`sealed interface`) cujas implementações — `final class` — carregam apenas os dados relevantes para aquele estado.
 
 Cada estado implementa somente as transições permitidas e lança `IllegalStateException` para as demais. Isso elimina blocos de `if/switch` espalhados e torna explícito em tempo de compilação quais transições existem.
 
@@ -86,9 +86,9 @@ Cada estado implementa somente as transições permitidas e lança `IllegalState
 
 ### Repositório
 
-As interfaces de repositório (`ClienteRepository`, `VeiculoRepository`, `PecaRepository`, `OrcamentoRepository`, `OrdemDeServicoRepository`) ficam no pacote `application` e não conhecem nenhum detalhe de banco de dados. Isso permite que os testes de casos de uso usem implementações em memória enquanto o servidor usa implementações SQLite, sem alterar nenhuma linha de lógica de negócio.
+As interfaces de repositório (`ClienteRepository`, `VeiculoRepository`, `PecaRepository`, `OrcamentoRepository`, `OrdemDeServicoRepository`) ficam no pacote `domain`, ao lado dos agregados que representam, e não conhecem nenhum detalhe de banco de dados. Isso permite que os testes de casos de uso usem implementações em memória enquanto o servidor usa implementações SQLite, sem alterar nenhuma linha de lógica de negócio.
 
-A persistência SQLite usa JDBC direto, sem ORM. Cada repositório monta suas próprias instruções SQL. O padrão `INSERT OR REPLACE` (UPSERT) simplifica o ciclo salvar/atualizar sem exigir controle de versão de registro. Valores monetários são armazenados em centavos (`INTEGER`) para evitar imprecisão de ponto flutuante.
+A persistência SQLite usa JDBC direto, sem ORM. Cada repositório monta suas próprias instruções SQL. O ciclo salvar/atualizar usa `INSERT ... ON CONFLICT(id) DO UPDATE` em vez de `INSERT OR REPLACE`: a segunda forma deleta a linha conflitante antes de inserir uma nova, o que desfaria silenciosamente qualquer outra constraint `UNIQUE` da tabela (CPF, placa, código de peça) ao receber um ID repetido — mascarando duplicações como substituições. A forma `ON CONFLICT(id) DO UPDATE` resolve apenas o conflito de chave primária e preserva todas as demais restrições. Valores monetários são armazenados em centavos (`INTEGER`) para evitar imprecisão de ponto flutuante.
 
 ### Composition root inline
 
